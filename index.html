@@ -1,19 +1,404 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>senior-labs</title><link rel="icon" href="favicon.svg">
-<meta name="description" content="senior-labs – das All-in-One-Tool für Streamer: Overlays, Alerts, Commands, Giveaways und Stream Together.">
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>senior-labs</title>
+<meta name="description" content="senior-labs – das kostenlose All-in-One-Tool für Streamer: Overlays, Alerts, Chat-Commands, Giveaways, Moderation und Stream Together. Läuft lokal auf deinem PC.">
+<meta property="og:title" content="senior-labs">
+<meta property="og:description" content="Das kostenlose All-in-One-Tool für Streamer – lokal auf deinem PC.">
+<meta name="theme-color" content="#0a0c0f">
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0f13;--fg:#e8edf2;--dim:#8b95a3;--acc:#22d3ee}
-*{box-sizing:border-box}html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;align-items:center;justify-content:center;padding:24px 16px}
-main{max-width:560px;text-align:center}
-img{width:120px;height:120px;filter:drop-shadow(0 0 24px rgba(34,211,238,.35))}
-h1{font-size:40px;margin:18px 0 6px;letter-spacing:.5px}h1 span{color:var(--acc)}
-p{color:var(--dim);margin:0 0 10px}
-.tag{display:inline-block;margin-top:14px;padding:6px 14px;border:1px solid rgba(34,211,238,.4);border-radius:999px;color:var(--acc);font-size:13px;font-weight:600}
-</style></head><body><main>
-<img src="mark.svg" alt="senior-labs Logo">
-<h1>senior<span>-labs</span></h1>
-<p>Das All-in-One-Tool für Streamer: Overlays, Alerts, Commands, Giveaways und Stream Together – lokal auf deinem PC.</p>
-<span class="tag">Bald verfügbar</span>
-</main></body></html>
+:root{
+  --acc:#22d3ee;--acc2:#3ff3ff;--acc-dim:rgba(34,211,238,.12);--acc-line:rgba(34,211,238,.25);
+  --bg0:#0a0c0f;--bg1:#0d0f13;--card:#14171d;--card2:#1a1e26;--line:#20252e;--line2:#2d3440;
+  --txt:#e7e9ee;--dim:#8b929e;--warn:#fbbf24;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg0);color:var(--txt);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 75% -10%,rgba(34,211,238,.13),transparent 60%),
+    radial-gradient(700px 500px at -10% 30%,rgba(34,211,238,.06),transparent 60%),
+    linear-gradient(rgba(34,211,238,.035) 1px,transparent 1px) 0 0/48px 48px,
+    linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px) 0 0/48px 48px,var(--bg0)}
+a{color:var(--acc);text-decoration:none}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:Oswald,Inter,sans-serif;letter-spacing:.3px;line-height:1.15;margin:0}
+.acc{color:var(--acc)}
+
+/* Navigation */
+nav{position:sticky;top:0;z-index:50;background:rgba(10,12,15,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:18px;height:62px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--txt);font-family:Oswald,sans-serif;font-size:21px;font-weight:600;letter-spacing:.4px}
+.brand img{width:34px;height:34px}
+.navlinks{display:flex;gap:22px;margin-left:auto}
+.navlinks a{color:var(--dim);font-size:14px;font-weight:500}
+.navlinks a:hover{color:var(--txt)}
+.langsw{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.langsw button{background:transparent;color:var(--dim);border:0;padding:6px 10px;font:700 12px Inter,sans-serif;letter-spacing:.5px;cursor:pointer}
+.langsw button.on{background:var(--acc-dim);color:var(--acc)}
+
+/* Knoepfe */
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:11px;font-weight:600;font-size:15px;border:1px solid var(--line2);background:var(--card);color:var(--txt);cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.btn:hover{transform:translateY(-1px);border-color:var(--acc-line)}
+.btn.pri{background:linear-gradient(180deg,var(--acc2),#16c9e6);color:#04232a;border-color:transparent;box-shadow:0 8px 30px rgba(34,211,238,.28)}
+.btn.pri:hover{box-shadow:0 10px 38px rgba(34,211,238,.42)}
+.btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn[aria-disabled="true"]{cursor:default;transform:none}
+
+/* Hero */
+.hero{padding:84px 0 70px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border:1px solid var(--acc-line);background:var(--acc-dim);color:var(--acc);border-radius:999px;font-size:13px;font-weight:600}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.hero h1{font-size:clamp(40px,6vw,66px);margin:20px 0 18px;font-weight:700}
+.hero h1 .glow{color:var(--acc);text-shadow:0 0 28px rgba(34,211,238,.45)}
+.hero p.lead{font-size:18px;color:var(--dim);max-width:540px;margin:0 0 30px}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:28px;color:var(--dim);font-size:14px}
+.facts>span{display:inline-flex;align-items:center;gap:7px}
+.facts svg{width:16px;height:16px;fill:none;stroke:var(--acc);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* Hero-Vorschau (nachgebaute OBS-Szene) */
+.mock{position:relative;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line2);border-radius:18px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.mbar{display:flex;gap:6px;margin-bottom:14px}
+.mbar i{width:10px;height:10px;border-radius:50%;background:var(--line2)}
+.scene{position:relative;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:
+  radial-gradient(120% 90% at 30% 20%,#1d3440,transparent 60%),radial-gradient(100% 100% at 90% 100%,#2a1d3a,transparent 55%),#0b1015}
+.boss{position:absolute;left:5%;right:5%;top:7%;background:rgba(8,10,14,.78);border:1px solid rgba(34,211,238,.3);border-radius:9px;padding:9px 12px}
+.boss .row{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#cfd8e3}
+.boss .row b{color:var(--acc);font-family:Oswald,sans-serif;font-size:13px;letter-spacing:.4px}
+.hp{height:9px;margin-top:6px;border-radius:5px;background:#1e252f;overflow:hidden}
+.hp i{display:block;height:100%;width:38%;background:linear-gradient(90deg,#ef4444,#f97316);box-shadow:0 0 12px rgba(239,68,68,.6);animation:hp 7s ease-in-out infinite}
+@keyframes hp{0%{width:72%}60%{width:21%}100%{width:72%}}
+.cams{position:absolute;right:5%;bottom:8%;display:grid;grid-template-columns:1fr 1fr;gap:6px;width:42%}
+.cam{aspect-ratio:16/9;border-radius:7px;border:2px solid var(--acc);background:linear-gradient(160deg,#27323f,#151b23);position:relative;box-shadow:0 0 14px rgba(34,211,238,.25)}
+.cam span{position:absolute;left:5px;bottom:3px;font-size:8.5px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:0 5px;border-radius:4px}
+.alert{position:absolute;left:5%;bottom:9%;display:flex;align-items:center;gap:9px;background:rgba(8,10,14,.85);border:1px solid rgba(251,191,36,.45);border-radius:10px;padding:8px 12px;animation:pop 4.5s ease-in-out infinite}
+.alert .ic{width:24px;height:24px;border-radius:7px;background:rgba(251,191,36,.18);display:flex;align-items:center;justify-content:center;color:var(--warn);font-size:13px}
+.alert div{font-size:10.5px;line-height:1.3;color:#cfd8e3}
+.alert b{display:block;color:var(--warn);font-family:Oswald,sans-serif;font-size:13px;letter-spacing:.3px}
+@keyframes pop{0%,8%{opacity:0;transform:translateY(10px) scale(.95)}16%,80%{opacity:1;transform:none}92%,100%{opacity:0;transform:translateY(-6px)}}
+.chat{margin-top:12px;display:grid;gap:6px;font-size:12.5px}
+.chat div{background:var(--bg1);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--dim)}
+.chat b{color:var(--txt)}
+.chat .bot b{color:var(--acc)}
+
+/* Abschnitte */
+section{padding:76px 0}
+.sh{text-align:center;max-width:680px;margin:0 auto 46px}
+.kick{color:var(--acc);font-weight:700;font-size:13px;letter-spacing:1.6px;text-transform:uppercase}
+.sh h2{font-size:clamp(30px,4vw,42px);margin:10px 0 12px}
+.sh p{color:var(--dim);margin:0;font-size:17px}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:15px;padding:22px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--acc-line);transform:translateY(-2px)}
+.ico{width:42px;height:42px;border-radius:11px;background:var(--acc-dim);border:1px solid var(--acc-line);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.ico svg{width:21px;height:21px;fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:20px;font-weight:600;margin-bottom:6px}
+.card p{margin:0;color:var(--dim);font-size:14.5px}
+
+/* Schwerpunkte */
+.spot{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.spot.rev .stxt{order:2}
+.stxt h2{font-size:clamp(28px,3.6vw,38px);margin:10px 0 14px}
+.stxt p{color:var(--dim);margin:0 0 18px}
+ul.check{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+ul.check li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+ul.check li::before{content:"";flex:0 0 20px;height:20px;margin-top:2px;border-radius:6px;background:var(--acc-dim) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322d3ee' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/13px no-repeat;border:1px solid var(--acc-line)}
+.panel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line2);border-radius:18px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+
+.st{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stc{border-radius:10px;aspect-ratio:16/9;position:relative;background:linear-gradient(160deg,#243140,#121820);border:2px solid var(--line2)}
+.stc.me{border-color:var(--acc);box-shadow:0 0 18px rgba(34,211,238,.25)}
+.stc span{position:absolute;left:8px;bottom:6px;font-size:11px;font-weight:700;background:rgba(0,0,0,.55);padding:1px 7px;border-radius:5px}
+.stc em{position:absolute;right:8px;top:6px;font-style:normal;font-size:10px;font-weight:700;color:var(--acc);background:rgba(4,35,42,.85);border:1px solid var(--acc-line);padding:0 6px;border-radius:5px}
+.code{margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--bg1);border:1px dashed var(--acc-line);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--dim)}
+.code b{font-family:ui-monospace,Consolas,monospace;color:var(--acc);font-size:14px;letter-spacing:.5px}
+
+.wow .line{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.wow .line:last-child{border-bottom:0}
+.wow .line b{font-family:Oswald,sans-serif;font-size:18px;color:var(--acc);letter-spacing:.3px}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--acc-dim);color:var(--acc);border:1px solid var(--acc-line);margin-left:8px}
+
+.why{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* FAQ */
+.faq{max-width:780px;margin:0 auto;display:grid;gap:10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:0 20px}
+details[open]{border-color:var(--acc-line)}
+summary{cursor:pointer;list-style:none;padding:17px 0;font-weight:600;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--acc);font-size:22px;line-height:1;transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin:0 0 18px;color:var(--dim)}
+
+/* Abschluss + Fusszeile */
+.final{text-align:center;padding:70px 24px;border:1px solid var(--acc-line);border-radius:22px;background:radial-gradient(600px 260px at 50% 0%,rgba(34,211,238,.16),transparent 70%),var(--card)}
+.final img{width:76px;height:76px;filter:drop-shadow(0 0 20px rgba(34,211,238,.45))}
+.final h2{font-size:clamp(28px,4vw,40px);margin:14px 0 10px}
+.final p{color:var(--dim);margin:0 auto 26px;max-width:520px}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--dim);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+
+/* Einblenden beim Scrollen */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+@media (max-width:960px){
+  .hero .wrap,.spot{grid-template-columns:1fr;gap:36px}
+  .spot.rev .stxt{order:0}
+  .grid,.why{grid-template-columns:repeat(2,1fr)}
+  .navlinks{display:none}
+  .langsw{margin-left:auto}
+}
+@media (max-width:600px){
+  .hero{padding:48px 0 40px}
+  section{padding:56px 0}
+  .grid,.why{grid-template-columns:1fr}
+  .wrap{padding:0 16px}
+  .cta .btn{flex:1;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="mark.svg" alt=""><span>senior<span class="acc">-labs</span></span></a>
+    <div class="navlinks">
+      <a href="#features">Features</a>
+      <a href="#together">Stream Together</a>
+      <a href="#wow">World of Warcraft</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="langsw" id="langSw"><button type="button" data-lang="de">DE</button><button type="button" data-lang="en">EN</button></div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <span class="pill"><span class="dot"></span><span data-t="pill">In Entwicklung · bald verfügbar</span></span>
+      <h1 data-t="h1">Ein Tool.<br><span class="glow">Dein ganzer Stream.</span></h1>
+      <p class="lead" data-t="lead">Overlays, Alerts, Chat-Commands, Giveaways, Moderation und gemeinsames Streamen – alles in einer App, die lokal auf deinem PC läuft. Kostenlos, ohne Konto, ohne Abo.</p>
+      <div class="cta">
+        <a class="btn pri" href="#download"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span data-t="cta1">Download – bald verfügbar</span></a>
+        <a class="btn" href="#features"><span data-t="cta2">Features ansehen</span></a>
+      </div>
+      <div class="facts">
+        <span><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span data-t="f1">100 % kostenlos</span></span>
+        <span><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span data-t="f2">Läuft lokal</span></span>
+        <span><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span data-t="f3">Deutsch &amp; Englisch</span></span>
+      </div>
+    </div>
+    <div class="mock rv" aria-hidden="true">
+      <div class="mbar"><i></i><i></i><i></i></div>
+      <div class="scene">
+        <div class="boss"><div class="row"><b>MYTHIC BOSS</b><span>Pull 47 · 12,4 %</span></div><div class="hp"><i></i></div></div>
+        <div class="alert"><div class="ic">★</div><div><b data-t="mAlert">Neuer Follower!</b>raid_fan_92</div></div>
+        <div class="cams"><div class="cam"><span>Streamer 2</span></div><div class="cam"><span>Streamer 3</span></div></div>
+      </div>
+      <div class="chat">
+        <div><b>zuschauer42:</b> !pulls</div>
+        <div class="bot"><b>senior-labs:</b> <span data-t="mBot">Wir sind bei Pull 47 – bester Versuch 12,4 % 💀</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sh rv">
+      <div class="kick">Features</div>
+      <h2 data-t="fh">Alles, was dein Stream braucht</h2>
+      <p data-t="fp">Statt fünf Tools mit fünf Logins: eine Oberfläche, ein Fenster, alles live in OBS.</p>
+    </div>
+    <div class="grid">
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3h18v14H3zM8 21h8M12 17v4"/></svg></div><h3>Overlays</h3><p data-t="c1p">Fertige Browser-Quellen für OBS mit Live-Vorschau – Look, Farben und Position frei anpassbar.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></div><h3>Alerts</h3><p data-t="c2p">Follow, Sub, Raid und Cheer mit eigenem Bild, WebM-Video und Sound. Der Editor zeigt die Szene 1:1 wie in OBS.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><h3 data-t="c3h">Chat-Commands</h3><p data-t="c3p">Eingebaute und eigene Commands, mit Timern pro Command. Der Bot läuft direkt in deinem Kanal.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Moderation</h3><p data-t="c4p">Automatischer Schutz vor Links, Caps, Spam und Wörtern auf deiner Blacklist.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.4 1.1-2 2.5-2s2.5.8 2.5 2-1 1.7-2.5 2.1-2.5 1-2.5 2.3 1.1 2.1 2.5 2.1 2.5-.7 2.5-2"/></svg></div><h3 data-t="c5h">Loyalty-Points</h3><p data-t="c5p">Deine eigene Watchtime-Währung samt Command – Zuschauer sammeln Punkte fürs Dabeisein.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div><h3>Giveaways</h3><p data-t="c6p">Glücksrad, Walze, Mischen oder Ausscheiden – der Gewinner muss im Chat antworten, sonst wird neu gezogen.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg></div><h3>Stream Together</h3><p data-t="c7p">Gäste und Co-Streamer per Video direkt in deine Szene – mit festen Links, Layout-Editor und Rahmen.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></div><h3>Stats</h3><p data-t="c8p">Live-Zahlen deines Twitch-Kanals auf einen Blick: Zuschauer, Follower und mehr.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><h3>Backup</h3><p data-t="c9p">Alles mit einem Klick sichern und wiederherstellen – auf Wunsch täglich automatisch, z. B. in deine Cloud.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="together">
+  <div class="wrap">
+    <div class="spot">
+      <div class="stxt rv">
+        <div class="kick">Stream Together</div>
+        <h2 data-t="th">Zusammen streamen – jeder auf seinem Kanal</h2>
+        <p data-t="tp">Holt euch gegenseitig per Video in den Stream. Teilt einen Raum-Code, fügt euch per Twitch-Name hinzu – und jeder gestaltet die Cams der anderen in seinem eigenen OBS.</p>
+        <ul class="check">
+          <li data-t="t1">Co-Streaming mit bis zu 12 Leuten über einen Raum-Code</li>
+          <li data-t="t2">Gäste ohne senior-labs kommen per Link – kein Konto, nichts installieren</li>
+          <li data-t="t3">Feste Einladungslinks, die immer gleich bleiben</li>
+          <li data-t="t4">Layout-Editor mit Rahmen, Studio mit Chat und Ein-Klick-On-Air</li>
+        </ul>
+      </div>
+      <div class="panel rv" aria-hidden="true">
+        <div class="st">
+          <div class="stc me"><span data-t="you">Du</span><em>LIVE</em></div>
+          <div class="stc"><span>Streamer 2</span><em>CO</em></div>
+          <div class="stc"><span>Streamer 3</span><em>CO</em></div>
+          <div class="stc"><span>Streamer 4</span><em>CO</em></div>
+        </div>
+        <div class="code"><span data-t="rc">Raum-Code</span> <b>SL-c2VuaW9yX2xh…</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="wow">
+  <div class="wrap">
+    <div class="spot rev">
+      <div class="stxt rv">
+        <div class="kick">World of Warcraft</div>
+        <h2 data-t="wh">Gebaut für Raid-Progress und Mythic+</h2>
+        <p data-t="wp">senior-labs liest dein Spiel mit und zeigt deinen Zuschauern live, was gerade passiert.</p>
+        <ul class="check">
+          <li data-t="w1">Live-Boss-HP, Pull-Zähler und bester Versuch im Overlay</li>
+          <li data-t="w2">Pullzahlen aus WarcraftLogs übernehmen</li>
+          <li data-t="w3">Mythic+-Overlay mit Timer, Bloodlust und Bestzeiten</li>
+          <li data-t="w4">WoW Forever: Tode-Ranking, Kills, XP/h und Gold deiner Session</li>
+        </ul>
+      </div>
+      <div class="panel wow rv" aria-hidden="true">
+        <div class="line"><span data-t="wl1">Pulls heute</span><b>47</b></div>
+        <div class="line"><span data-t="wl2">Bester Versuch</span><b>12,4 %</b></div>
+        <div class="line"><span>Mythic+ <span class="tag">+14</span></span><b>28:41</b></div>
+        <div class="line"><span>Bloodlust</span><b>✓</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sh rv">
+      <div class="kick" data-t="yk">Warum senior-labs</div>
+      <h2 data-t="yh">Deins. Lokal. Kostenlos.</h2>
+    </div>
+    <div class="why">
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div><h3 data-t="y1h">Läuft auf deinem PC</h3><p data-t="y1p">Keine Cloud, kein Server-Ausfall. Deine Daten bleiben bei dir.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M20.6 9.4L12 18l-8.6-8.6a4 4 0 015.7-5.7L12 6.6l2.9-2.9a4 4 0 015.7 5.7z"/></svg></div><h3 data-t="y2h">Kostenlos</h3><p data-t="y2p">Kein Abo, keine Premium-Stufe, keine Werbung in deinem Stream.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg></div><h3 data-t="y3h">Deutsch &amp; Englisch</h3><p data-t="y3p">Die komplette Oberfläche schaltet live um – ohne Neustart.</p></div>
+      <div class="card rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div><h3 data-t="y4h">Eine Oberfläche</h3><p data-t="y4p">Alles an einem Ort, alles als Browser-Quelle in OBS.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sh rv"><div class="kick">FAQ</div><h2 data-t="qh">Häufige Fragen</h2></div>
+    <div class="faq">
+      <details class="rv"><summary data-t="q1">Was kostet senior-labs?</summary><p data-t="a1">Nichts. senior-labs ist kostenlos – ohne Abo und ohne Premium-Version.</p></details>
+      <details class="rv"><summary data-t="q2">Brauche ich ein Konto?</summary><p data-t="a2">Nein. Du verbindest nur deinen Twitch-Kanal, damit Bot, Alerts und Stats funktionieren.</p></details>
+      <details class="rv"><summary data-t="q3">Welche Streaming-Software wird unterstützt?</summary><p data-t="a3">Alles, was Browser-Quellen kann – also OBS Studio, Streamlabs Desktop und ähnliche.</p></details>
+      <details class="rv"><summary data-t="q4">Muss ich WoW spielen, um es zu nutzen?</summary><p data-t="a4">Nein. Alerts, Commands, Moderation, Points, Giveaways und Stream Together funktionieren in jedem Spiel. Die WoW-Overlays sind ein Extra.</p></details>
+      <details class="rv"><summary data-t="q5">Wie kommen meine Gäste in den Stream?</summary><p data-t="a5">Du schickst ihnen ihren Einladungslink. Sie öffnen ihn im Browser, erlauben Kamera und Mikrofon – fertig. Das Video läuft direkt zwischen euch über VDO.ninja.</p></details>
+      <details class="rv"><summary data-t="q6">Wann kann ich es herunterladen?</summary><p data-t="a6">senior-labs ist gerade in der Testphase. Der Download erscheint hier, sobald die erste Version fertig ist.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="final rv">
+      <img src="mark.svg" alt="">
+      <h2 data-t="dh">Bald verfügbar</h2>
+      <p data-t="dp">senior-labs wird gerade mit echten Streams getestet. Sobald die erste Version fertig ist, gibt's den Download genau hier.</p>
+      <span class="btn pri" aria-disabled="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-t="db">Download folgt</span></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 senior-labs</span>
+    <span data-t="foot">Video bei Stream Together über VDO.ninja · Nicht verbunden mit Twitch oder Blizzard Entertainment.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Deutsch steht im HTML, Englisch hier. Umschalten ohne Neuladen, Wahl wird gemerkt.
+  var EN = {
+    pill: 'In development · coming soon',
+    h1: 'One tool.<br><span class="glow">Your whole stream.</span>',
+    lead: 'Overlays, alerts, chat commands, giveaways, moderation and streaming together – all in one app that runs locally on your PC. Free, no account, no subscription.',
+    cta1: 'Download – coming soon', cta2: 'See features',
+    f1: '100% free', f2: 'Runs locally', f3: 'English &amp; German',
+    mAlert: 'New follower!', mBot: 'We are on pull 47 – best attempt 12.4% 💀',
+    fh: 'Everything your stream needs', fp: 'Instead of five tools with five logins: one interface, one window, everything live in OBS.',
+    c1p: 'Ready-made OBS browser sources with live preview – look, colours and position fully customizable.',
+    c2p: 'Follow, sub, raid and cheer with your own image, WebM video and sound. The editor shows the scene 1:1 as in OBS.',
+    c3h: 'Chat commands', c3p: 'Built-in and custom commands with per-command timers. The bot runs right in your channel.',
+    c4p: 'Automatic protection against links, caps, spam and words on your blacklist.',
+    c5h: 'Loyalty points', c5p: 'Your own watchtime currency and command – viewers earn points for being there.',
+    c6p: 'Wheel, reel, shuffle or elimination – the winner has to reply in chat, otherwise there is a redraw.',
+    c7p: 'Guests and co-streamers on video right in your scene – with permanent links, layout editor and frames.',
+    c8p: 'Live numbers of your Twitch channel at a glance: viewers, followers and more.',
+    c9p: 'Save and restore everything with one click – daily and automatic if you like, e.g. to your cloud.',
+    th: 'Stream together – everyone on their own channel',
+    tp: 'Bring each other into your streams on video. Share a room code, add each other by Twitch name – and everyone arranges the others’ cams in their own OBS.',
+    t1: 'Co-streaming with up to 12 people via one room code', t2: 'Guests without senior-labs join by link – no account, nothing to install',
+    t3: 'Permanent invite links that never change', t4: 'Layout editor with frames, studio with chat and one-click on-air',
+    you: 'You', rc: 'Room code',
+    wh: 'Built for raid progress and Mythic+', wp: 'senior-labs reads along with your game and shows your viewers live what is happening.',
+    w1: 'Live boss HP, pull counter and best attempt in the overlay', w2: 'Import pull counts from WarcraftLogs',
+    w3: 'Mythic+ overlay with timer, Bloodlust and best times', w4: 'WoW Forever: death ranking, kills, XP/h and gold of your session',
+    wl1: 'Pulls today', wl2: 'Best attempt',
+    yk: 'Why senior-labs', yh: 'Yours. Local. Free.',
+    y1h: 'Runs on your PC', y1p: 'No cloud, no server outages. Your data stays with you.',
+    y2h: 'Free', y2p: 'No subscription, no premium tier, no ads in your stream.',
+    y3h: 'English &amp; German', y3p: 'The whole interface switches live – no restart.',
+    y4h: 'One interface', y4p: 'Everything in one place, everything as a browser source in OBS.',
+    qh: 'Frequently asked questions',
+    q1: 'What does senior-labs cost?', a1: 'Nothing. senior-labs is free – no subscription and no premium version.',
+    q2: 'Do I need an account?', a2: 'No. You only connect your Twitch channel so the bot, alerts and stats work.',
+    q3: 'Which streaming software is supported?', a3: 'Anything that supports browser sources – OBS Studio, Streamlabs Desktop and similar.',
+    q4: 'Do I have to play WoW to use it?', a4: 'No. Alerts, commands, moderation, points, giveaways and Stream Together work with any game. The WoW overlays are a bonus.',
+    q5: 'How do my guests get into the stream?', a5: 'You send them their invite link. They open it in the browser, allow camera and microphone – done. Video runs directly between you via VDO.ninja.',
+    q6: 'When can I download it?', a6: 'senior-labs is in testing right now. The download will appear here as soon as the first version is ready.',
+    dh: 'Coming soon', dp: 'senior-labs is being tested on real streams right now. As soon as the first version is ready, the download will be right here.',
+    db: 'Download coming', foot: 'Stream Together video via VDO.ninja · Not affiliated with Twitch or Blizzard Entertainment.'
+  };
+  var nodes = document.querySelectorAll('[data-t]'), DE = {};
+  nodes.forEach(function (n) { DE[n.getAttribute('data-t')] = n.innerHTML; });
+  function set(l) {
+    var src = l === 'en' ? EN : DE;
+    nodes.forEach(function (n) { var v = src[n.getAttribute('data-t')]; if (v != null) n.innerHTML = v; });
+    document.documentElement.lang = l;
+    document.querySelectorAll('#langSw [data-lang]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-lang') === l); });
+    try { localStorage.setItem('sl-lang', l); } catch (_) {}
+  }
+  var saved = null; try { saved = localStorage.getItem('sl-lang'); } catch (_) {}
+  set(saved === 'de' || saved === 'en' ? saved : (/^de/i.test(navigator.language || '') ? 'de' : 'en'));
+  document.getElementById('langSw').addEventListener('click', function (e) { var b = e.target.closest('[data-lang]'); if (b) set(b.getAttribute('data-lang')); });
+
+  // Elemente beim Scrollen einblenden
+  var rv = document.querySelectorAll('.rv');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: 0.12 });
+    rv.forEach(function (el) { io.observe(el); });
+  } else rv.forEach(function (el) { el.classList.add('in'); });
+})();
+</script>
+</body>
+</html>
