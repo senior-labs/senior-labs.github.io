@@ -46,6 +46,9 @@
   .joinbtn{width:100%;margin-top:20px;padding:14px;font-size:16px}
   .err{color:var(--red);font-size:13px;margin-top:10px;min-height:1px}
   .foot{color:var(--dim);font-size:12px;margin-top:22px;text-align:center}
+  .sl{display:block;margin-top:14px;padding:11px 14px;border:1px dashed var(--line2);border-radius:11px;color:var(--dim);font-size:13px;text-decoration:none;text-align:center}
+  .sl b{color:var(--acc)}
+  .sl:hover{border-color:var(--acc);color:var(--txt)}
   .foot a{color:var(--dim)}
   /* Call */
   .call{position:fixed;inset:0;display:none;flex-direction:column}
@@ -82,13 +85,14 @@
         <div class="meter"><i id="meter"></i></div>
       </div>
       <div>
-        <label style="margin-top:0">Your name</label>
-        <input id="name" maxlength="40" autocomplete="nickname">
+        <label style="margin-top:0">Your name <span style="font-weight:400">&mdash; use the same name every time, then you land in the same spot</span></label>
+        <input id="name" maxlength="40" autocomplete="nickname" placeholder="e.g. Peter">
         <label>Camera</label><select id="cam"></select>
         <label>Microphone</label><select id="mic"></select>
-        <ul class="tips"><li>Use <b>headphones</b> &mdash; otherwise the stream hears an echo.</li><li>You can leave anytime and rejoin with the <b>same link</b>.</li></ul>
+        <ul class="tips"><li>Use <b>headphones</b> &mdash; otherwise the stream hears an echo.</li><li>You can leave anytime and rejoin with the <b>same link</b> and the <b>same name</b>.</li></ul>
         <button class="pri joinbtn" id="joinBtn" type="button" onclick="join()"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Join now</button>
         <div class="err" id="err"></div>
+        <a class="sl" id="slOpen" href="#">Streaming with <b>senior-labs</b> yourself? <b>Open this room in senior-labs &rarr;</b></a>
       </div>
     </div>
   </div>
@@ -121,8 +125,9 @@
 </div></div>
 
 <script>
-  // Oeffentliche Gastseite von senior-labs. Alle Daten stehen im #Hash des Invite-Links (gehen nie an einen Server):
-  //   r=Raum  p=Passwort  id=feste Push-ID  n=Name  s=Streamer  c=Akzentfarbe
+  // Oeffentliche Gastseite von senior-labs. Alle Daten stehen im #Hash des Raum-Links (gehen nie an einen Server):
+  //   r=Raum  p=Passwort  s=Streamer  c=Akzentfarbe  (n=Name vorbelegen, optional)
+  // Kennung = 'c' + sha1(raum | normierter Name) - genau wie in senior-labs -> gleicher Name = gleicher Rahmen.
   // VDO.ninja laeuft nur als eingebettetes Iframe; Bedienung ueber die offizielle Iframe-API (postMessage).
   var Q={};location.hash.replace(/^#/,'').split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0){try{Q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));}catch(_){}}});
   var stream=null,raf=0,ifr=null,micOn=true,camOn=true,chatOpen=false;
@@ -135,11 +140,14 @@
     document.documentElement.style.setProperty('--acc',h);document.documentElement.style.setProperty('--acc-dim','rgba('+r+','+g+','+b+',.14)');}
   var streamer=(Q.s||'').trim();
   if(streamer){$('hTitle').textContent='Join '+streamer+' on stream';$('callWith').textContent='live with '+streamer;document.title='Join '+streamer+' · senior-labs';}
-  $('name').value=Q.n||'';$('prevName').textContent=Q.n||'';
+  var saved='';try{saved=localStorage.getItem('sl-join-name')||'';}catch(_){}
+  $('name').value=Q.n||saved;$('prevName').textContent=$('name').value;
   $('name').addEventListener('input',function(){$('prevName').textContent=this.value;});
+  // senior-labs-Nutzer: Raum im eigenen senior-labs oeffnen (dort Rueckfrage, danach Studio)
+  $('slOpen').href='http://127.0.0.1:8790/join-room'+location.hash;
 
-  if(!Q.r||!/^[A-Za-z0-9_]{4,40}$/.test(Q.id||'')){
-    $('doneTitle').textContent='This invite link is incomplete';$('doneSub').textContent='Please ask the streamer to send you the link again.';
+  if(!Q.r||!/^[A-Za-z0-9_]{4,40}$/.test(Q.r)){
+    $('doneTitle').textContent='This room link is incomplete';$('doneSub').textContent='Please ask the streamer to send you the link again.';
     document.querySelector('#done button').style.display='none';show('done');
   }else{show('lobby');start();}
 
@@ -180,11 +188,22 @@
 
   // ---- Call ----
   function lbl(sel){var o=sel.options[sel.selectedIndex];return o?(o.getAttribute('data-l')||'').replace(/ /g,'_'):'';}   // nur echte Geraetenamen, sonst waehlt VDO.ninja selbst
+  function norm(n){return String(n||'').normalize('NFC').toLowerCase().replace(/\s+/g,'').slice(0,40);}
+  function pid(room,name){
+    var data=new TextEncoder().encode(String(room).toLowerCase()+'|'+norm(name));
+    return crypto.subtle.digest('SHA-1',data).then(function(b){var h='';new Uint8Array(b).forEach(function(x){h+=('0'+x.toString(16)).slice(-2);});return 'c'+h.slice(0,15);});
+  }
   function join(){
-    var name=($('name').value||'').trim();if(!name){$('err').textContent='Please enter your name.';$('name').focus();return;}
+    var name=($('name').value||'').trim().slice(0,40);if(!norm(name)){$('err').textContent='Please enter your name.';$('name').focus();return;}
+    if(!window.crypto||!crypto.subtle||!window.TextEncoder){$('err').textContent='Your browser is too old. Please use a current Chrome, Edge, Firefox or Safari.';return;}
+    try{localStorage.setItem('sl-join-name',name);}catch(_){}
+    $('joinBtn').disabled=true;
+    pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;$('err').textContent='Could not start. Please reload the page.';});
+  }
+  function start2(name,id){
     var noCam=$('cam').value==='none',camL=noCam?'0':lbl($('cam')),micL=lbl($('mic'));
     stop();micOn=true;camOn=!noCam;
-    var u='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&push='+enc(Q.id)+'&label='+enc(name)
+    var u='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&push='+enc(id)+'&label='+enc(name)
       +'&webcam&autostart&cleanoutput&transparent'+(camL?'&videodevice='+enc(camL):'')+(micL?'&audiodevice='+enc(micL):'');
     ifr=document.createElement('iframe');ifr.setAttribute('allow','camera *; microphone *; autoplay; fullscreen; display-capture');ifr.src=u;
     $('stage').insertBefore(ifr,$('drawer'));$('bCam').disabled=noCam;paint();show('call');
