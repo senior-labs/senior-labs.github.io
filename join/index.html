@@ -241,7 +241,8 @@
   function stop(){if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}cancelAnimationFrame(raf);$('meter').style.width='0';}
   function start(){
     stop();var cv=$('cam').value,mv=$('mic').value;
-    var c={video:cv==='none'?false:(cv?{deviceId:{exact:cv}}:{width:{ideal:1280},height:{ideal:720}}),audio:mv?{deviceId:{exact:mv}}:true};
+    var hd={width:{ideal:1280},height:{ideal:720},aspectRatio:{ideal:16/9}};   // wie VDO.ninja: 16:9, sonst liefern manche Webcams 4:3 und die Vorschau wirkt herangezoomt
+    var c={video:cv==='none'?false:(cv?Object.assign({deviceId:{exact:cv}},hd):hd),audio:mv?{deviceId:{exact:mv}}:true};
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setT('prevMsg','noSupport');return;}
     camFail=null;
     // Kamera und Mikro getrennt versuchen: ist die Kamera belegt (z. B. von OBS), soll wenigstens das Mikro laufen
