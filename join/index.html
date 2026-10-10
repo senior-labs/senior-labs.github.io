@@ -357,8 +357,15 @@
       $('bCam').disabled=!fx;paint();show('call');
     }).catch(function(e){$('joinBtn').disabled=false;try{vdo.disconnect();}catch(_){}vdo=null;setT('err','sendFail',{n:(e&&e.message)||'?'});});
   }
+  // Mikro-Zustand an alle melden, die mich sehen (Studio-Kacheln zeigen ihn am Mikro-Symbol): "SLMIC <kennung> 1|0"
+  function rawSend(msg){
+    if(!vdo||!vdo.connections)return;var data=JSON.stringify({chat:msg});
+    vdo.connections.forEach(function(c){['publisher','viewer'].forEach(function(k){var ch=c&&c[k]&&c[k].dataChannel;if(ch&&ch.readyState==='open')try{ch.send(data);}catch(_){}});});
+  }
+  function micState(){if(inCall&&myId)rawSend('SLMIC '+myId+' '+(micOn?1:0));}
+  setInterval(micState,4000);
   function viewPost(m){try{viewIfr.contentWindow.postMessage(m,'*');}catch(_){}}
-  function toggleMic(){micOn=!micOn;if(micStream)micStream.getAudioTracks().forEach(function(t){t.enabled=micOn;});paint();}
+  function toggleMic(){micOn=!micOn;if(micStream)micStream.getAudioTracks().forEach(function(t){t.enabled=micOn;});paint();micState();}
   function toggleCam(){if(!fx)return;camOn=!camOn;fx.track.enabled=camOn;$('selfV').classList.toggle('off',!camOn);paint();}
   function paint(){var a=$('bMic'),c=$('bCam');a.classList.toggle('off',!micOn);a.querySelector('span').textContent=T(micOn?'micOn':'muted');c.classList.toggle('off',!camOn);c.querySelector('span').textContent=T(camOn?'camOn':'camOff');}
   function leave(quiet){
@@ -373,7 +380,7 @@
   $('chatIn').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
   var seenMsg={};
   function onChat(m,label){
-    m=String(m||'');if(m.indexOf('SLCMD ')===0){onCmd(m);return;}if(m.indexOf('SLADM ')===0){onAdm(m);return;}
+    m=String(m||'');if(m.indexOf('SLCMD ')===0){onCmd(m);return;}if(m.indexOf('SLADM ')===0){onAdm(m);return;}if(m.indexOf('SLMIC ')===0)return;
     var k=m+'|'+Math.floor(Date.now()/3000);if(seenMsg[k])return;seenMsg[k]=1;   // gleiche Nachricht ueber zwei Wege nur einmal zeigen
     var mm=m.match(/^\[([^\]]{1,40})\] ([\s\S]*)$/);addMsg(mm?mm[1]:(String(label||'').replace(/<[^>]*>/g,'').replace(/:\s*$/,'').trim()||T('host')),mm?mm[2]:m);
   }
