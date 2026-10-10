@@ -83,6 +83,17 @@
   .slb .go{flex:0 0 auto;background:var(--acc);color:#06252e;font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:10px;white-space:nowrap}
   .or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12px;margin:-8px 0 16px;text-transform:uppercase;letter-spacing:1.4px}
   .or:before,.or:after{content:'';flex:1;height:1px;background:var(--line2)}
+  /* Hintergrund-Auswahl */
+  .bgs{display:flex;flex-wrap:wrap;gap:7px}
+  .bg{width:58px;height:38px;border-radius:8px;border:2px solid var(--line2);background:#0f1114 center/cover;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:10.5px;font-weight:700;padding:0;position:relative;overflow:hidden}
+  .bg:hover{border-color:var(--acc)}
+  .bg.on{border-color:var(--acc);box-shadow:0 0 12px var(--acc-dim);color:var(--txt)}
+  .bg .bl{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,#cfd8e3 0 16%,transparent 17%),linear-gradient(135deg,#1d4e5c,#3a2a4a)}
+  .bg span{position:relative;z-index:1;background:rgba(8,10,14,.72);padding:1px 5px;border-radius:4px;line-height:1.3}
+  .bgurl{display:flex;gap:8px;margin-top:8px}.bgurl input{flex:1}.bgurl button{padding:9px 13px}
+  .bghint{color:var(--dim);font-size:12px;margin:6px 0 0}
+  .bgpop{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(440px,calc(100% - 28px));background:rgba(20,23,29,.97);border:1px solid var(--line2);border-radius:14px;padding:14px;z-index:6;display:none}
+  .bgpop.open{display:block}
   @media (max-width:760px){.slb{flex-wrap:wrap}.slb .go{width:100%;text-align:center}}
 </style>
 </head>
@@ -105,6 +116,9 @@
         <input id="name" maxlength="40" autocomplete="nickname">
         <label data-l="camLbl"></label><select id="cam"></select>
         <label data-l="micLbl"></label><select id="mic"></select>
+        <label data-l="bgLbl"></label><div class="bgs" id="bgs"></div>
+        <div class="bgurl" id="bgUrlRow" style="display:none"><input id="bgUrl" type="url" placeholder="https://…/bild.jpg"><button type="button" class="pri" onclick="bgApplyUrl('bgUrl')" data-l="bgUse"></button></div>
+        <p class="bghint" id="bgHint"></p>
         <ul class="tips"><li data-l="tip1" data-html></li><li data-l="tip2" data-html></li></ul>
         <button class="pri joinbtn" id="joinBtn" type="button" onclick="join()"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-l="joinBtn"></span></button>
         <div class="err" id="err"></div>
@@ -124,10 +138,13 @@
     <div style="display:flex;align-items:center;margin-bottom:10px"><b style="flex:1">Chat</b><button type="button" style="padding:5px 9px" onclick="toggleChat()">&times;</button></div>
     <div class="msgs" id="msgs"></div>
     <div class="send"><input id="chatIn" maxlength="300"><button class="pri" type="button" onclick="sendChat()" data-l="send"></button></div>
-  </div></div>
+  </div><div class="bgpop" id="bgPop"><b data-l="bgLbl" style="display:block;margin-bottom:8px"></b><div class="bgs" id="bgs2"></div>
+    <div class="bgurl" id="bgUrlRow2" style="display:none"><input id="bgUrl2" type="url" placeholder="https://…/bild.jpg"><button type="button" class="pri" onclick="bgApplyUrl('bgUrl2')" data-l="bgUse"></button></div>
+    <p class="bghint" data-l="bgReconnect"></p></div></div>
   <div class="bar">
     <button type="button" id="bMic" onclick="toggleMic()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span></span></button>
     <button type="button" id="bCam" onclick="toggleCam()"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg><span></span></button>
+    <button type="button" onclick="toggleBg()"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg><span data-l="bgBtn"></span></button>
     <button type="button" onclick="toggleChat()"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Chat</span><i class="badge" id="chatBadge"></i></button>
     <button type="button" class="leave" onclick="leave()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span data-l="leave"></span></button>
   </div>
@@ -145,7 +162,7 @@
   // Kennung = 'c' + sha1(raum | normierter Name) - genau wie in senior-labs -> gleicher Name = gleicher Rahmen.
   // VDO.ninja laeuft nur als eingebettetes Iframe; Bedienung ueber die offizielle Iframe-API (postMessage).
   var Q={};location.hash.replace(/^#/,'').split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0){try{Q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));}catch(_){}}});
-  var stream=null,raf=0,ifr=null,micOn=true,camOn=true,chatOpen=false,camFail=null,myId='';
+  var stream=null,raf=0,ifr=null,micOn=true,camOn=true,chatOpen=false,camFail=null,myId='',myName='';
   function $(id){return document.getElementById(id);}
   function enc(x){return encodeURIComponent(String(x==null?'':x));}
   function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -170,7 +187,10 @@
       leftT:'You left the stream',leftS:'Thanks for joining! You can come back anytime with the same link and name.',
       badT:'This room link is incomplete',badS:'Please ask the streamer to send you the link again.',
       kickT:'You were removed from the stream',kickS:'The streamer ended your connection. If they invite you again, use the same link and name.',
-      mutedBy:'The host muted your microphone. Click Mic to unmute.'},
+      mutedBy:'The host muted your microphone. Click Mic to unmute.',
+      bgLbl:'Background',bgBtn:'Background',bgUse:'Use',bgNone:'Off',bgB1:'Soft',bgB2:'Blur',bgB3:'Strong',bgOwn:'Link',
+      bgHintFx:'Applied as soon as you join \u2014 you then see yourself with it. Needs a bit of computing power.',bgHintUrl:'Paste a link to an image on the internet (https). The image must be freely accessible, otherwise it stays without background.',
+      bgBadUrl:'Please paste a link starting with https://',bgReconnect:'Changing the background reconnects you for a moment.'},
     de:{title:'Komm zu {s} in den Stream',titleNo:'Du bist zum Stream eingeladen',slQ:'Du streamst selbst mit senior-labs?',slTxt:'Dann tritt nicht hier bei — öffne den Raum in deinem senior-labs. Deine Cam läuft dann über dein Studio und du landest in deinem eigenen Rahmen.',slGo:'In senior-labs öffnen →',
       orGuest:'oder als Gast beitreten',sub:'Prüf Kamera und Mikrofon, dann tritt bei. Erst wenn du auf Beitreten klickst, wird etwas gesendet.',
       nameLbl:'Dein Name <span style="font-weight:400">&mdash; nimm jedes Mal denselben, dann landest du wieder am selben Platz</span>',namePh:'z. B. Peter',camLbl:'Kamera',micLbl:'Mikrofon',
@@ -188,7 +208,10 @@
       leftT:'Du hast den Stream verlassen',leftS:'Danke fürs Mitmachen! Mit demselben Link und Namen kannst du jederzeit wiederkommen.',
       badT:'Dieser Raum-Link ist unvollständig',badS:'Bitte lass dir den Link noch einmal vom Streamer schicken.',
       kickT:'Du wurdest aus dem Stream entfernt',kickS:'Der Streamer hat deine Verbindung beendet. Wenn er dich wieder einlädt, nimm denselben Link und Namen.',
-      mutedBy:'Der Host hat dein Mikrofon stummgeschaltet. Klick auf Mikro, um es wieder einzuschalten.'}
+      mutedBy:'Der Host hat dein Mikrofon stummgeschaltet. Klick auf Mikro, um es wieder einzuschalten.',
+      bgLbl:'Hintergrund',bgBtn:'Hintergrund',bgUse:'Nehmen',bgNone:'Aus',bgB1:'Leicht',bgB2:'Unscharf',bgB3:'Stark',bgOwn:'Link',
+      bgHintFx:'Wird beim Beitreten angewendet \u2014 dann siehst du dich damit. Braucht etwas Rechenleistung.',bgHintUrl:'F\u00fcge den Link zu einem Bild im Internet ein (https). Das Bild muss frei abrufbar sein, sonst bleibt der Hintergrund aus.',
+      bgBadUrl:'Bitte einen Link einf\u00fcgen, der mit https:// beginnt',bgReconnect:'Beim Wechsel wirst du kurz neu verbunden.'}
   };
   var lang='en';try{lang=localStorage.getItem('sl-lang')||'';}catch(_){}
   if(lang!=='de'&&lang!=='en')lang=/^de/i.test(navigator.language||'')?'de':'en';
@@ -203,7 +226,7 @@
     var st=(Q.s||'').trim();setT('hTitle',st?'title':'titleNo',{s:st});
     if(st){setT('callWith','liveWith',{s:st});document.title=T('docTitle',{s:st});}
     document.querySelectorAll('#langSw [data-lang]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-lang')===lang);});
-    paint();devices();
+    paint();devices();bgRender();
   }
   $('langSw').addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(!b)return;lang=b.getAttribute('data-lang');try{localStorage.setItem('sl-lang',lang);}catch(_){}applyLang();});
 
@@ -263,6 +286,38 @@
   }
   $('cam').addEventListener('change',start);$('mic').addEventListener('change',start);
 
+  // ---- Hintergrund (Effekte von VDO.ninja): Unschaerfe in Stufen oder Bild (online, frei abrufbar) ----
+  var BG_BASE='https://senior-labs.github.io/bg/';
+  var BGS=[{k:'none',l:'bgNone'},{k:'b1',l:'bgB1',blur:3},{k:'b2',l:'bgB2',blur:7},{k:'b3',l:'bgB3',blur:15},
+    {k:'neon',img:BG_BASE+'neon.jpg'},{k:'lounge',img:BG_BASE+'lounge.jpg'},{k:'space',img:BG_BASE+'space.jpg'},{k:'url',l:'bgOwn'}];
+  var bg={k:'none',url:''};try{var sb=JSON.parse(localStorage.getItem('sl-bg')||'null');if(sb&&sb.k)bg=sb;}catch(_){}
+  function bgSave(){try{localStorage.setItem('sl-bg',JSON.stringify(bg));}catch(_){}}
+  function bgParams(){
+    var o=BGS.filter(function(x){return x.k===bg.k;})[0];if(!o||o.k==='none')return '';
+    if(o.blur)return '&effects=3&effectvalue='+o.blur;
+    var u=o.k==='url'?bg.url:o.img;if(!u)return '';
+    return '&effects=5&imagelist='+enc(JSON.stringify([u]));
+  }
+  function bgRender(){
+    ['bgs','bgs2'].forEach(function(id,ix){
+      var box=$(id);if(!box)return;
+      box.innerHTML=BGS.map(function(o){
+        var inner=o.img?'':(o.blur?'<i class="bl" style="filter:blur('+Math.round(o.blur/3)+'px)"></i><span>'+esc(T(o.l))+'</span>':'<span>'+esc(T(o.l))+'</span>');
+        return '<button type="button" class="bg'+(bg.k===o.k?' on':'')+'" data-bg="'+o.k+'"'+(o.img?' style="background-image:url('+o.img+')"':'')+' title="'+esc(o.l?T(o.l):o.k)+'">'+inner+'</button>';
+      }).join('');
+      var row=$(ix?'bgUrlRow2':'bgUrlRow');if(row)row.style.display=bg.k==='url'?'':'none';
+      var inp=$(ix?'bgUrl2':'bgUrl');if(inp&&document.activeElement!==inp)inp.value=bg.url||'';
+    });
+    var h=$('bgHint');if(h)h.textContent=bg.k==='url'?T('bgHintUrl'):(bg.k==='none'?'':T('bgHintFx'));
+  }
+  function bgSet(k){if(bg.k===k)return;bg.k=k;bgSave();bgRender();if(k!=='url'||bg.url)bgLive();}
+  function bgApplyUrl(id){var v=($(id).value||'').trim();if(!/^https:[/][/][^ "'<>]+$/i.test(v)){alertBg(id);return;}bg.url=v;bg.k='url';bgSave();bgRender();bgLive();}
+  function alertBg(id){var i=$(id);i.style.borderColor='var(--red)';i.title=T('bgBadUrl');setTimeout(function(){i.style.borderColor='';},2500);}
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-bg]');if(b)bgSet(b.getAttribute('data-bg'));});
+  function toggleBg(){$('bgPop').classList.toggle('open');}
+  // im Anruf: mit neuem Hintergrund neu verbinden (VDO.ninja kann Effekte nicht live umschalten)
+  function bgLive(){if(!ifr||!myName)return;var f=ifr;ifr=null;try{f.contentWindow.postMessage({close:true},'*');}catch(_){}setTimeout(function(){f.remove();},300);start2(myName,myId,true);}
+
   // ---- Call ----
   function lbl(sel){var o=sel.options[sel.selectedIndex];return o?(o.getAttribute('data-dl')||'').replace(/ /g,'_'):'';}   // nur echte Geraetenamen, sonst waehlt VDO.ninja selbst
   function norm(n){return String(n||'').normalize('NFC').toLowerCase().replace(/\s+/g,'').slice(0,40);}
@@ -277,12 +332,13 @@
     $('joinBtn').disabled=true;
     pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;setT('err','cantStart');});
   }
-  function start2(name,id){
-    myId=id;
+  function start2(name,id,again){
+    myId=id;myName=name;
     var noCam=$('cam').value==='none'||!!camFail,camL=noCam?'0':lbl($('cam')),micL=lbl($('mic'));
-    stop();micOn=true;camOn=!noCam;
+    stop();if(!again){micOn=true;camOn=!noCam;}
     var u='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&push='+enc(id)+'&label='+enc(name)
-      +'&webcam&autostart&cleanoutput&transparent'+(camL?'&videodevice='+enc(camL):'')+(micL?'&audiodevice='+enc(micL):'');
+      +'&webcam&autostart&cleanoutput&transparent'+(camL?'&videodevice='+enc(camL):'')+(micL?'&audiodevice='+enc(micL):'')+(noCam?'':bgParams())
+      +(again&&!micOn?'&mute':'')+(again&&!camOn?'&videomute':'');
     ifr=document.createElement('iframe');ifr.setAttribute('allow','camera *; microphone *; autoplay; fullscreen; display-capture');ifr.src=u;
     $('stage').insertBefore(ifr,$('drawer'));$('bCam').disabled=noCam;paint();show('call');
   }
@@ -296,12 +352,16 @@
   function sendChat(){var i=$('chatIn'),v=i.value.trim();if(!v||!ifr)return;post({sendChat:v});addMsg(T('you'),v);i.value='';}
   $('chatIn').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
   // Steuerbefehle aus dem senior-labs-Studio: unsichtbare Chat-Nachricht "SLCMD <befehl> <kennung>"
+  // Rechte: Besitzer steht im Link (o=), Admins kommen per "SLADM <besitzer> <version> <liste>" aus dem Raum
+  var owner=norm(Q.o||''),admins=[],admV=0;
+  function onAdm(t){var p=String(t).split(' ');if(p.length<4||!owner||norm(p[1])!==owner)return;var v=parseInt(p[2],10)||0;if(v<=admV)return;admV=v;admins=p[3]==='-'?[]:p[3].split(',').map(norm);}
   function onCmd(t){
     var p=String(t).split(' ');if(p[2]!==myId)return;
+    var from=norm(p[3]||'');if(!from||(from!==owner&&admins.indexOf(from)<0))return;   // nur Admins duerfen
     if(p[1]==='mute'&&micOn){post({mic:false});micOn=false;paint();addMsg('senior-labs',T('mutedBy'));}
     else if(p[1]==='kick'){leave();setT('doneTitle','kickT');setT('doneSub','kickS');}
   }
-  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){var m=d.gotChat.msg||'';if(String(m).indexOf('SLCMD ')===0){onCmd(m);return;}addMsg(d.gotChat.label||d.gotChat.name||T('host'),m);}});
+  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){var m=d.gotChat.msg||'';if(String(m).indexOf('SLCMD ')===0){onCmd(m);return;}if(String(m).indexOf('SLADM ')===0){onAdm(m);return;}addMsg(d.gotChat.label||d.gotChat.name||T('host'),m);}});
   window.addEventListener('beforeunload',function(){if(ifr)post({close:true});});
 
   applyLang();
