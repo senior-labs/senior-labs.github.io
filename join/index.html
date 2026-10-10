@@ -74,7 +74,7 @@
   .langsw button:hover{border:0;color:var(--txt)}
   .langsw button.on{background:var(--acc-dim);color:var(--acc)}
   /* Hinweis fuer senior-labs-Streamer: deutlich, bevor man automatisch auf "Beitreten" klickt */
-  .slb{display:flex;align-items:center;gap:14px;margin:0 0 22px;padding:14px 16px;border:1px solid var(--acc);border-radius:13px;background:linear-gradient(90deg,var(--acc-dim),rgba(34,211,238,.04));text-decoration:none;color:var(--txt);box-shadow:0 0 22px var(--acc-dim);transition:.15s}
+  .slb{display:flex;align-items:center;gap:14px;margin:22px 0 22px;padding:14px 16px;border:1px solid var(--acc);border-radius:13px;background:linear-gradient(90deg,var(--acc-dim),rgba(34,211,238,.04));text-decoration:none;color:var(--txt);box-shadow:0 0 22px var(--acc-dim);transition:.15s}
   .slb:hover{box-shadow:0 0 30px rgba(34,211,238,.3);transform:translateY(-1px)}
   .slb svg.logo{width:40px;height:40px;flex:0 0 auto;overflow:visible}
   .slb .tx{flex:1;min-width:0}
@@ -87,7 +87,7 @@
 </style>
 </head>
 <body>
-<div class="langsw" id="langSw"><button type="button" data-lang="de">DE</button><button type="button" data-lang="en">EN</button></div>
+<div class="langsw" id="langSw"><button type="button" data-lang="en">EN</button><button type="button" data-lang="de">DE</button></div>
 <div class="lobby" id="lobby">
   <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="200 90 460 460"><defs><linearGradient id="slg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ff3ff"/><stop offset="1" stop-color="#16c9e6"/></linearGradient><filter id="slglow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b"/><feFlood flood-color="#22d3ee" flood-opacity=".85"/><feComposite in2="b" operator="in" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter><mask id="slgap" maskUnits="userSpaceOnUse" x="200" y="90" width="460" height="460"><rect x="200" y="90" width="460" height="460" fill="#fff"/><path d="M402 250 L470 297 Q492 312 510 330" fill="none" stroke="#000" stroke-width="34" stroke-linecap="round"/></mask></defs><g filter="url(#slglow)" fill="url(#slg)"><circle cx="455" cy="148" r="40"/><g mask="url(#slgap)"><path d="M422 197 C380 190 338 216 331 272 L330 372 L398 428 L400 512 Q400 533 423 533 Q446 533 446 512 L446 440 C446 398 430 362 422 330 C416 302 420 280 430 258 C438 240 438 214 422 197 Z"/><path d="M330 396 L372 431 L372 512 Q372 533 351 533 Q330 533 330 512 Z"/></g><path d="M404 254 L470 299 Q490 313 507 329" fill="none" stroke="url(#slg)" stroke-width="21" stroke-linecap="round"/><path d="M485 364 C483 347 495 339 507 340 C520 341 528 350 528 363 L528 528" fill="none" stroke="url(#slg)" stroke-width="10" stroke-linecap="round"/></g></svg><div><b>senior-labs</b><small>stream together</small></div></div>
   <div class="card">
