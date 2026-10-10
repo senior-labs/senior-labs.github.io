@@ -130,7 +130,7 @@
   // Kennung = 'c' + sha1(raum | normierter Name) - genau wie in senior-labs -> gleicher Name = gleicher Rahmen.
   // VDO.ninja laeuft nur als eingebettetes Iframe; Bedienung ueber die offizielle Iframe-API (postMessage).
   var Q={};location.hash.replace(/^#/,'').split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0){try{Q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));}catch(_){}}});
-  var stream=null,raf=0,ifr=null,micOn=true,camOn=true,chatOpen=false;
+  var stream=null,raf=0,ifr=null,micOn=true,camOn=true,chatOpen=false,camFail=null,myId='';
   function $(id){return document.getElementById(id);}
   function enc(x){return encodeURIComponent(String(x==null?'':x));}
   function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -157,14 +157,28 @@
     stop();var cv=$('cam').value,mv=$('mic').value;
     var c={video:cv==='none'?false:(cv?{deviceId:{exact:cv}}:{width:{ideal:1280},height:{ideal:720}}),audio:mv?{deviceId:{exact:mv}}:true};
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('prevMsg').textContent='Your browser does not support video calls. Please use Chrome, Edge, Firefox or Safari.';return;}
-    navigator.mediaDevices.getUserMedia(c).then(function(s){
-      stream=s;$('prev').srcObject=s;$('prevMsg').style.display=s.getVideoTracks().length?'none':'flex';if(!s.getVideoTracks().length)$('prevMsg').textContent='Audio only';
+    camFail=null;
+    // Kamera und Mikro getrennt versuchen: ist die Kamera belegt (z. B. von OBS), soll wenigstens das Mikro laufen
+    navigator.mediaDevices.getUserMedia(c).catch(function(e){
+      if(!c.video||!c.audio||(e&&e.name==='NotAllowedError'))throw e;
+      return navigator.mediaDevices.getUserMedia({audio:c.audio,video:false}).then(function(s){camFail=e;return s;});
+    }).then(function(s){
+      stream=s;$('prev').srcObject=s;var hasV=s.getVideoTracks().length>0;
+      $('prevMsg').style.display=hasV?'none':'flex';
+      $('prevMsg').textContent=camFail?camMsg(camFail):'Audio only';
       meter(s);devices();$('err').textContent='';
     }).catch(function(e){
-      $('prevMsg').style.display='flex';
-      $('prevMsg').textContent=(e&&e.name==='NotAllowedError')?'Access was blocked. Click the camera icon in the address bar, allow access and reload.':'No camera or microphone found. Check that nothing else is using them.';
+      $('prevMsg').style.display='flex';$('prevMsg').textContent=camMsg(e,true);
       devices();
     });
+  }
+  // verstaendliche Meldung je nach Fehler
+  function camMsg(e,both){
+    var n=e&&e.name||'';
+    if(n==='NotAllowedError'||n==='SecurityError')return 'Access was blocked. Click the camera icon in the address bar, allow access and reload.';
+    if(n==='NotReadableError'||n==='TrackStartError'||n==='AbortError')return (both?'Camera or microphone':'The camera')+' is being used by another program (e.g. OBS, Discord, Teams). Close it there \u2014 or in OBS click Start Virtual Camera and pick \u201cOBS Virtual Camera\u201d above.';
+    if(n==='OverconstrainedError'||n==='NotFoundError')return (both?'No camera or microphone':'This camera was not')+' found. Pick another one above or check the cable.';
+    return (both?'Camera and microphone':'The camera')+' could not be started ('+(n||'unknown error')+'). Pick another one above or reload the page.';
   }
   function meter(s){
     if(!s.getAudioTracks().length)return;
@@ -201,7 +215,8 @@
     pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;$('err').textContent='Could not start. Please reload the page.';});
   }
   function start2(name,id){
-    var noCam=$('cam').value==='none',camL=noCam?'0':lbl($('cam')),micL=lbl($('mic'));
+    myId=id;
+    var noCam=$('cam').value==='none'||!!camFail,camL=noCam?'0':lbl($('cam')),micL=lbl($('mic'));
     stop();micOn=true;camOn=!noCam;
     var u='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&push='+enc(id)+'&label='+enc(name)
       +'&webcam&autostart&cleanoutput&transparent'+(camL?'&videodevice='+enc(camL):'')+(micL?'&audiodevice='+enc(micL):'');
@@ -209,7 +224,7 @@
     $('stage').insertBefore(ifr,$('drawer'));$('bCam').disabled=noCam;paint();show('call');
   }
   function post(m){try{ifr.contentWindow.postMessage(m,'*');}catch(_){}}
-  function toggleMic(){post({mic:'toggle'});micOn=!micOn;paint();}
+  function toggleMic(){micOn=!micOn;post({mic:micOn});paint();}
   function toggleCam(){post({camera:'toggle'});camOn=!camOn;paint();}
   function paint(){var a=$('bMic'),c=$('bCam');a.classList.toggle('off',!micOn);a.querySelector('span').textContent=micOn?'Mic on':'Muted';c.classList.toggle('off',!camOn);c.querySelector('span').textContent=camOn?'Cam on':'Cam off';}
   function leave(){if(ifr){post({close:true});var f=ifr;ifr=null;setTimeout(function(){f.remove();},400);}show('done');}
@@ -217,7 +232,13 @@
   function addMsg(who,t){var d=document.createElement('div');d.className='m';d.innerHTML='<b>'+esc(who)+'</b>'+esc(t);$('msgs').appendChild(d);$('msgs').scrollTop=1e9;if(!chatOpen)$('chatBadge').classList.add('on');}
   function sendChat(){var i=$('chatIn'),v=i.value.trim();if(!v||!ifr)return;post({sendChat:v});addMsg('You',v);i.value='';}
   $('chatIn').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
-  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){addMsg(d.gotChat.label||d.gotChat.name||'Host',d.gotChat.msg||'');}});
+  // Steuerbefehle aus dem senior-labs-Studio: unsichtbare Chat-Nachricht "SLCMD <befehl> <kennung>"
+  function onCmd(t){
+    var p=String(t).split(' ');if(p[2]!==myId)return;
+    if(p[1]==='mute'&&micOn){post({mic:false});micOn=false;paint();addMsg('senior-labs','The host muted your microphone. Click Mic to unmute.');}
+    else if(p[1]==='kick'){leave();$('doneTitle').textContent='You were removed from the stream';$('doneSub').textContent='The streamer ended your connection. If they invite you again, use the same link and name.';}
+  }
+  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){var m=d.gotChat.msg||'';if(String(m).indexOf('SLCMD ')===0){onCmd(m);return;}addMsg(d.gotChat.label||d.gotChat.name||'Host',m);}});
   window.addEventListener('beforeunload',function(){if(ifr)post({close:true});});
 </script>
 </body>
