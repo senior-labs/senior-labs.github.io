@@ -46,9 +46,6 @@
   .joinbtn{width:100%;margin-top:20px;padding:14px;font-size:16px}
   .err{color:var(--red);font-size:13px;margin-top:10px;min-height:1px}
   .foot{color:var(--dim);font-size:12px;margin-top:22px;text-align:center}
-  .sl{display:block;margin-top:14px;padding:11px 14px;border:1px dashed var(--line2);border-radius:11px;color:var(--dim);font-size:13px;text-decoration:none;text-align:center}
-  .sl b{color:var(--acc)}
-  .sl:hover{border-color:var(--acc);color:var(--txt)}
   .foot a{color:var(--dim)}
   /* Call */
   .call{position:fixed;inset:0;display:none;flex-direction:column}
@@ -71,62 +68,80 @@
   .center{min-height:100%;display:none;align-items:center;justify-content:center;padding:20px}
   .center .card{max-width:480px;text-align:center}
   @media (max-width:760px){.cols{grid-template-columns:1fr}.card{padding:18px}h1{font-size:23px}.bar button{min-width:0;flex:1}.bar button span{display:none}}
+  /* Sprache */
+  .langsw{position:fixed;top:14px;right:16px;z-index:20;display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:rgba(13,15,19,.85)}
+  .langsw button{background:transparent;color:var(--dim);border:0;border-radius:0;padding:6px 11px;font-size:12px;font-weight:700;letter-spacing:.5px}
+  .langsw button:hover{border:0;color:var(--txt)}
+  .langsw button.on{background:var(--acc-dim);color:var(--acc)}
+  /* Hinweis fuer senior-labs-Streamer: deutlich, bevor man automatisch auf "Beitreten" klickt */
+  .slb{display:flex;align-items:center;gap:14px;margin:0 0 22px;padding:14px 16px;border:1px solid var(--acc);border-radius:13px;background:linear-gradient(90deg,var(--acc-dim),rgba(34,211,238,.04));text-decoration:none;color:var(--txt);box-shadow:0 0 22px var(--acc-dim);transition:.15s}
+  .slb:hover{box-shadow:0 0 30px rgba(34,211,238,.3);transform:translateY(-1px)}
+  .slb svg.logo{width:40px;height:40px;flex:0 0 auto;overflow:visible}
+  .slb .tx{flex:1;min-width:0}
+  .slb .tx b{display:block;font-size:15px}
+  .slb .tx small{display:block;color:var(--dim);font-size:12.5px;line-height:1.4;margin-top:2px}
+  .slb .go{flex:0 0 auto;background:var(--acc);color:#06252e;font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:10px;white-space:nowrap}
+  .or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12px;margin:-8px 0 16px;text-transform:uppercase;letter-spacing:1.4px}
+  .or:before,.or:after{content:'';flex:1;height:1px;background:var(--line2)}
+  @media (max-width:760px){.slb{flex-wrap:wrap}.slb .go{width:100%;text-align:center}}
 </style>
 </head>
 <body>
+<div class="langsw" id="langSw"><button type="button" data-lang="de">DE</button><button type="button" data-lang="en">EN</button></div>
 <div class="lobby" id="lobby">
   <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="200 90 460 460"><defs><linearGradient id="slg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ff3ff"/><stop offset="1" stop-color="#16c9e6"/></linearGradient><filter id="slglow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b"/><feFlood flood-color="#22d3ee" flood-opacity=".85"/><feComposite in2="b" operator="in" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter><mask id="slgap" maskUnits="userSpaceOnUse" x="200" y="90" width="460" height="460"><rect x="200" y="90" width="460" height="460" fill="#fff"/><path d="M402 250 L470 297 Q492 312 510 330" fill="none" stroke="#000" stroke-width="34" stroke-linecap="round"/></mask></defs><g filter="url(#slglow)" fill="url(#slg)"><circle cx="455" cy="148" r="40"/><g mask="url(#slgap)"><path d="M422 197 C380 190 338 216 331 272 L330 372 L398 428 L400 512 Q400 533 423 533 Q446 533 446 512 L446 440 C446 398 430 362 422 330 C416 302 420 280 430 258 C438 240 438 214 422 197 Z"/><path d="M330 396 L372 431 L372 512 Q372 533 351 533 Q330 533 330 512 Z"/></g><path d="M404 254 L470 299 Q490 313 507 329" fill="none" stroke="url(#slg)" stroke-width="21" stroke-linecap="round"/><path d="M485 364 C483 347 495 339 507 340 C520 341 528 350 528 363 L528 528" fill="none" stroke="url(#slg)" stroke-width="10" stroke-linecap="round"/></g></svg><div><b>senior-labs</b><small>stream together</small></div></div>
   <div class="card">
-    <h1 id="hTitle">You're invited to the stream</h1>
-    <p class="sub" id="hSub">Check your camera and microphone, then join. Nothing is sent until you click Join.</p>
+    <h1 id="hTitle"></h1>
+    <a class="slb" id="slOpen" href="#"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="200 90 460 460"><defs><linearGradient id="slg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ff3ff"/><stop offset="1" stop-color="#16c9e6"/></linearGradient><filter id="slglow2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b"/><feFlood flood-color="#22d3ee" flood-opacity=".85"/><feComposite in2="b" operator="in" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter><mask id="slgap2" maskUnits="userSpaceOnUse" x="200" y="90" width="460" height="460"><rect x="200" y="90" width="460" height="460" fill="#fff"/><path d="M402 250 L470 297 Q492 312 510 330" fill="none" stroke="#000" stroke-width="34" stroke-linecap="round"/></mask></defs><g filter="url(#slglow2)" fill="url(#slg2)"><circle cx="455" cy="148" r="40"/><g mask="url(#slgap2)"><path d="M422 197 C380 190 338 216 331 272 L330 372 L398 428 L400 512 Q400 533 423 533 Q446 533 446 512 L446 440 C446 398 430 362 422 330 C416 302 420 280 430 258 C438 240 438 214 422 197 Z"/><path d="M330 396 L372 431 L372 512 Q372 533 351 533 Q330 533 330 512 Z"/></g><path d="M404 254 L470 299 Q490 313 507 329" fill="none" stroke="url(#slg2)" stroke-width="21" stroke-linecap="round"/><path d="M485 364 C483 347 495 339 507 340 C520 341 528 350 528 363 L528 528" fill="none" stroke="url(#slg2)" stroke-width="10" stroke-linecap="round"/></g></svg><span class="tx"><b data-l="slQ"></b><small data-l="slTxt"></small></span><span class="go" data-l="slGo"></span></a>
+    <div class="or" data-l="orGuest"></div>
+    <p class="sub" data-l="sub"></p>
     <div class="cols">
       <div>
-        <div class="prev"><video id="prev" autoplay muted playsinline></video><div class="msg" id="prevMsg">Allow camera &amp; microphone access to see your preview.</div><span class="nm" id="prevName"></span></div>
+        <div class="prev"><video id="prev" autoplay muted playsinline></video><div class="msg" id="prevMsg"></div><span class="nm" id="prevName"></span></div>
         <div class="meter"><i id="meter"></i></div>
       </div>
       <div>
-        <label style="margin-top:0">Your name <span style="font-weight:400">&mdash; use the same name every time, then you land in the same spot</span></label>
-        <input id="name" maxlength="40" autocomplete="nickname" placeholder="e.g. Peter">
-        <label>Camera</label><select id="cam"></select>
-        <label>Microphone</label><select id="mic"></select>
-        <ul class="tips"><li>Use <b>headphones</b> &mdash; otherwise the stream hears an echo.</li><li>You can leave anytime and rejoin with the <b>same link</b> and the <b>same name</b>.</li></ul>
-        <button class="pri joinbtn" id="joinBtn" type="button" onclick="join()"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Join now</button>
+        <label style="margin-top:0" data-l="nameLbl" data-html></label>
+        <input id="name" maxlength="40" autocomplete="nickname">
+        <label data-l="camLbl"></label><select id="cam"></select>
+        <label data-l="micLbl"></label><select id="mic"></select>
+        <ul class="tips"><li data-l="tip1" data-html></li><li data-l="tip2" data-html></li></ul>
+        <button class="pri joinbtn" id="joinBtn" type="button" onclick="join()"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-l="joinBtn"></span></button>
         <div class="err" id="err"></div>
-        <a class="sl" id="slOpen" href="#">Streaming with <b>senior-labs</b> yourself? <b>Open this room in senior-labs &rarr;</b></a>
       </div>
     </div>
   </div>
-  <div class="foot">Video runs peer-to-peer via <a href="https://vdo.ninja" target="_blank" rel="noopener">VDO.ninja</a> &middot; no account, nothing to install.</div>
+  <div class="foot" data-l="foot" data-html></div>
 </div>
 
 <div class="call" id="call">
   <div class="top">
     <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="200 90 460 460"><defs><linearGradient id="slg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ff3ff"/><stop offset="1" stop-color="#16c9e6"/></linearGradient><filter id="slglow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b"/><feFlood flood-color="#22d3ee" flood-opacity=".85"/><feComposite in2="b" operator="in" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter><mask id="slgap" maskUnits="userSpaceOnUse" x="200" y="90" width="460" height="460"><rect x="200" y="90" width="460" height="460" fill="#fff"/><path d="M402 250 L470 297 Q492 312 510 330" fill="none" stroke="#000" stroke-width="34" stroke-linecap="round"/></mask></defs><g filter="url(#slglow)" fill="url(#slg)"><circle cx="455" cy="148" r="40"/><g mask="url(#slgap)"><path d="M422 197 C380 190 338 216 331 272 L330 372 L398 428 L400 512 Q400 533 423 533 Q446 533 446 512 L446 440 C446 398 430 362 422 330 C416 302 420 280 430 258 C438 240 438 214 422 197 Z"/><path d="M330 396 L372 431 L372 512 Q372 533 351 533 Q330 533 330 512 Z"/></g><path d="M404 254 L470 299 Q490 313 507 329" fill="none" stroke="url(#slg)" stroke-width="21" stroke-linecap="round"/><path d="M485 364 C483 347 495 339 507 340 C520 341 528 350 528 363 L528 528" fill="none" stroke="url(#slg)" stroke-width="10" stroke-linecap="round"/></g></svg><div><b>senior-labs</b><small id="callWith">stream together</small></div></div>
     <div style="flex:1"></div>
-    <span class="pill"><i></i>Connected</span>
+    <span class="pill"><i></i><span data-l="connected"></span></span>
   </div>
   <div class="stage" id="stage"><div class="drawer" id="drawer">
     <div style="display:flex;align-items:center;margin-bottom:10px"><b style="flex:1">Chat</b><button type="button" style="padding:5px 9px" onclick="toggleChat()">&times;</button></div>
     <div class="msgs" id="msgs"></div>
-    <div class="send"><input id="chatIn" maxlength="300" placeholder="Message…"><button class="pri" type="button" onclick="sendChat()">Send</button></div>
+    <div class="send"><input id="chatIn" maxlength="300"><button class="pri" type="button" onclick="sendChat()" data-l="send"></button></div>
   </div></div>
   <div class="bar">
-    <button type="button" id="bMic" onclick="toggleMic()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Mic on</span></button>
-    <button type="button" id="bCam" onclick="toggleCam()"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg><span>Cam on</span></button>
+    <button type="button" id="bMic" onclick="toggleMic()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span></span></button>
+    <button type="button" id="bCam" onclick="toggleCam()"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg><span></span></button>
     <button type="button" onclick="toggleChat()"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Chat</span><i class="badge" id="chatBadge"></i></button>
-    <button type="button" class="leave" onclick="leave()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Leave</span></button>
+    <button type="button" class="leave" onclick="leave()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span data-l="leave"></span></button>
   </div>
 </div>
 
 <div class="center" id="done"><div class="card">
-  <h1 id="doneTitle">You left the stream</h1>
-  <p class="sub" id="doneSub">Thanks for joining! You can come back anytime with the same link.</p>
-  <button class="pri" type="button" onclick="location.reload()">Rejoin</button>
+  <h1 id="doneTitle"></h1>
+  <p class="sub" id="doneSub"></p>
+  <button class="pri" type="button" onclick="location.reload()" data-l="rejoin"></button>
 </div></div>
 
 <script>
   // Oeffentliche Gastseite von senior-labs. Alle Daten stehen im #Hash des Raum-Links (gehen nie an einen Server):
-  //   r=Raum  p=Passwort  s=Streamer  c=Akzentfarbe  (n=Name vorbelegen, optional)
+  //   r=Raum  p=Passwort  s=Streamer  (n=Name vorbelegen, optional)
   // Kennung = 'c' + sha1(raum | normierter Name) - genau wie in senior-labs -> gleicher Name = gleicher Rahmen.
   // VDO.ninja laeuft nur als eingebettetes Iframe; Bedienung ueber die offizielle Iframe-API (postMessage).
   var Q={};location.hash.replace(/^#/,'').split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0){try{Q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));}catch(_){}}});
@@ -134,29 +149,77 @@
   function $(id){return document.getElementById(id);}
   function enc(x){return encodeURIComponent(String(x==null?'':x));}
   function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  function show(id){['lobby','call','done'].forEach(function(k){$(k).style.display=(k===id)?(k==='call'||k==='done'?'flex':'flex'):'none';});}
+  function show(id){['lobby','call','done'].forEach(function(k){$(k).style.display=(k===id)?'flex':'none';});}
 
-  if(/^#[0-9a-f]{6}$/i.test(Q.c||'')){var h=Q.c,r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3,2),16),b=parseInt(h.substr(5,2),16);
-    document.documentElement.style.setProperty('--acc',h);document.documentElement.style.setProperty('--acc-dim','rgba('+r+','+g+','+b+',.14)');}
-  var streamer=(Q.s||'').trim();
-  if(streamer){$('hTitle').textContent='Join '+streamer+' on stream';$('callWith').textContent='live with '+streamer;document.title='Join '+streamer+' · senior-labs';}
+  // ---- Sprache (DE/EN): Browsersprache, Wahl wird gemerkt ----
+  var L={
+    en:{title:'Join {s} on stream',titleNo:"You're invited to the stream",slQ:'Do you stream with senior-labs yourself?',slTxt:'Then do not join here — open the room in your senior-labs. Your cam runs through your Studio and you land in your own frame.',slGo:'Open in senior-labs →',
+      orGuest:'or join as a guest',sub:'Check your camera and microphone, then join. Nothing is sent until you click Join.',
+      nameLbl:'Your name <span style="font-weight:400">&mdash; use the same name every time, then you land in the same spot</span>',namePh:'e.g. Peter',camLbl:'Camera',micLbl:'Microphone',
+      tip1:'Use <b>headphones</b> &mdash; otherwise the stream hears an echo.',tip2:'You can leave anytime and rejoin with the <b>same link</b> and the <b>same name</b>.',joinBtn:'Join now',
+      foot:'Video runs peer-to-peer via <a href="https://vdo.ninja" target="_blank" rel="noopener">VDO.ninja</a> &middot; no account, nothing to install.',
+      connected:'Connected',send:'Send',msgPh:'Message…',leave:'Leave',rejoin:'Rejoin',liveWith:'live with {s}',docTitle:'Join {s} · senior-labs',
+      micOn:'Mic on',muted:'Muted',camOn:'Cam on',camOff:'Cam off',you:'You',host:'Host',
+      allow:'Allow camera & microphone access to see your preview.',audioOnly:'Audio only',noSupport:'Your browser does not support video calls. Please use Chrome, Edge, Firefox or Safari.',
+      blocked:'Access was blocked. Click the camera icon in the address bar, allow access and reload.',
+      busy1:'The camera is being used by another program (e.g. OBS, Discord, Teams). Close it there — or in OBS click Start Virtual Camera and pick “OBS Virtual Camera” above. Your microphone works anyway.',
+      busy2:'Camera or microphone is being used by another program (e.g. OBS, Discord, Teams). Close it there and reload.',
+      nf1:'This camera was not found. Pick another one above or check the cable.',nf2:'No camera or microphone found. Check the cable and reload.',
+      err1:'The camera could not be started ({n}). Pick another one above or reload the page.',err2:'Camera and microphone could not be started ({n}). Reload the page.',
+      noCamOpt:'No camera (audio only)',camN:'Camera {n}',micN:'Microphone {n}',enterName:'Please enter your name.',oldBrowser:'Your browser is too old. Please use a current Chrome, Edge, Firefox or Safari.',cantStart:'Could not start. Please reload the page.',
+      leftT:'You left the stream',leftS:'Thanks for joining! You can come back anytime with the same link and name.',
+      badT:'This room link is incomplete',badS:'Please ask the streamer to send you the link again.',
+      kickT:'You were removed from the stream',kickS:'The streamer ended your connection. If they invite you again, use the same link and name.',
+      mutedBy:'The host muted your microphone. Click Mic to unmute.'},
+    de:{title:'Komm zu {s} in den Stream',titleNo:'Du bist zum Stream eingeladen',slQ:'Du streamst selbst mit senior-labs?',slTxt:'Dann tritt nicht hier bei — öffne den Raum in deinem senior-labs. Deine Cam läuft dann über dein Studio und du landest in deinem eigenen Rahmen.',slGo:'In senior-labs öffnen →',
+      orGuest:'oder als Gast beitreten',sub:'Prüf Kamera und Mikrofon, dann tritt bei. Erst wenn du auf Beitreten klickst, wird etwas gesendet.',
+      nameLbl:'Dein Name <span style="font-weight:400">&mdash; nimm jedes Mal denselben, dann landest du wieder am selben Platz</span>',namePh:'z. B. Peter',camLbl:'Kamera',micLbl:'Mikrofon',
+      tip1:'Nimm <b>Kopfhörer</b> &mdash; sonst hört der Stream ein Echo.',tip2:'Du kannst jederzeit gehen und mit <b>demselben Link</b> und <b>demselben Namen</b> wiederkommen.',joinBtn:'Jetzt beitreten',
+      foot:'Video läuft direkt zwischen euch über <a href="https://vdo.ninja" target="_blank" rel="noopener">VDO.ninja</a> &middot; kein Konto, nichts zu installieren.',
+      connected:'Verbunden',send:'Senden',msgPh:'Nachricht…',leave:'Verlassen',rejoin:'Wieder beitreten',liveWith:'live mit {s}',docTitle:'Zu {s} in den Stream · senior-labs',
+      micOn:'Mikro an',muted:'Stumm',camOn:'Cam an',camOff:'Cam aus',you:'Du',host:'Host',
+      allow:'Erlaube den Zugriff auf Kamera & Mikrofon, um deine Vorschau zu sehen.',audioOnly:'Nur Ton',noSupport:'Dein Browser unterstützt keine Videoanrufe. Bitte nimm Chrome, Edge, Firefox oder Safari.',
+      blocked:'Der Zugriff wurde blockiert. Klick auf das Kamera-Symbol in der Adressleiste, erlaube den Zugriff und lade neu.',
+      busy1:'Die Kamera wird gerade von einem anderen Programm benutzt (z. B. OBS, Discord, Teams). Schließ sie dort — oder klick in OBS auf „Virtuelle Kamera starten“ und wähl oben „OBS Virtual Camera“. Dein Mikrofon funktioniert trotzdem.',
+      busy2:'Kamera oder Mikrofon werden gerade von einem anderen Programm benutzt (z. B. OBS, Discord, Teams). Schließ sie dort und lade neu.',
+      nf1:'Diese Kamera wurde nicht gefunden. Wähl oben eine andere oder prüf das Kabel.',nf2:'Keine Kamera und kein Mikrofon gefunden. Prüf das Kabel und lade neu.',
+      err1:'Die Kamera ließ sich nicht starten ({n}). Wähl oben eine andere oder lade die Seite neu.',err2:'Kamera und Mikrofon ließen sich nicht starten ({n}). Lade die Seite neu.',
+      noCamOpt:'Keine Kamera (nur Ton)',camN:'Kamera {n}',micN:'Mikrofon {n}',enterName:'Bitte gib deinen Namen ein.',oldBrowser:'Dein Browser ist zu alt. Bitte nimm einen aktuellen Chrome, Edge, Firefox oder Safari.',cantStart:'Start fehlgeschlagen. Bitte lade die Seite neu.',
+      leftT:'Du hast den Stream verlassen',leftS:'Danke fürs Mitmachen! Mit demselben Link und Namen kannst du jederzeit wiederkommen.',
+      badT:'Dieser Raum-Link ist unvollständig',badS:'Bitte lass dir den Link noch einmal vom Streamer schicken.',
+      kickT:'Du wurdest aus dem Stream entfernt',kickS:'Der Streamer hat deine Verbindung beendet. Wenn er dich wieder einlädt, nimm denselben Link und Namen.',
+      mutedBy:'Der Host hat dein Mikrofon stummgeschaltet. Klick auf Mikro, um es wieder einzuschalten.'}
+  };
+  var lang='en';try{lang=localStorage.getItem('sl-lang')||'';}catch(_){}
+  if(lang!=='de'&&lang!=='en')lang=/^de/i.test(navigator.language||'')?'de':'en';
+  function T(k,v){var s=(L[lang]&&L[lang][k])||L.en[k]||k;if(v)Object.keys(v).forEach(function(n){s=s.split('{'+n+'}').join(v[n]);});return s;}
+  // Text setzen und Schluessel merken -> beim Sprachwechsel neu uebersetzbar
+  function setT(el,k,v){if(typeof el==='string')el=$(el);el.setAttribute('data-k',k);el._v=v;el.textContent=T(k,v);}
+  function applyLang(){
+    document.documentElement.lang=lang;
+    document.querySelectorAll('[data-l]').forEach(function(el){var t=T(el.getAttribute('data-l'));if(el.hasAttribute('data-html'))el.innerHTML=t;else el.textContent=t;});
+    document.querySelectorAll('[data-k]').forEach(function(el){el.textContent=T(el.getAttribute('data-k'),el._v);});
+    $('name').placeholder=T('namePh');$('chatIn').placeholder=T('msgPh');
+    var st=(Q.s||'').trim();setT('hTitle',st?'title':'titleNo',{s:st});
+    if(st){setT('callWith','liveWith',{s:st});document.title=T('docTitle',{s:st});}
+    document.querySelectorAll('#langSw [data-lang]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-lang')===lang);});
+    paint();devices();
+  }
+  $('langSw').addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(!b)return;lang=b.getAttribute('data-lang');try{localStorage.setItem('sl-lang',lang);}catch(_){}applyLang();});
+
   var saved='';try{saved=localStorage.getItem('sl-join-name')||'';}catch(_){}
   $('name').value=Q.n||saved;$('prevName').textContent=$('name').value;
   $('name').addEventListener('input',function(){$('prevName').textContent=this.value;});
   // senior-labs-Nutzer: Raum im eigenen senior-labs oeffnen (dort Rueckfrage, danach Studio)
   $('slOpen').href='http://127.0.0.1:8790/join-room'+location.hash;
-
-  if(!Q.r||!/^[A-Za-z0-9_]{4,40}$/.test(Q.r)){
-    $('doneTitle').textContent='This room link is incomplete';$('doneSub').textContent='Please ask the streamer to send you the link again.';
-    document.querySelector('#done button').style.display='none';show('done');
-  }else{show('lobby');start();}
+  setT('prevMsg','allow');
 
   // ---- Lobby: Vorschau, Geraete, Pegel ----
   function stop(){if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}cancelAnimationFrame(raf);$('meter').style.width='0';}
   function start(){
     stop();var cv=$('cam').value,mv=$('mic').value;
     var c={video:cv==='none'?false:(cv?{deviceId:{exact:cv}}:{width:{ideal:1280},height:{ideal:720}}),audio:mv?{deviceId:{exact:mv}}:true};
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('prevMsg').textContent='Your browser does not support video calls. Please use Chrome, Edge, Firefox or Safari.';return;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setT('prevMsg','noSupport');return;}
     camFail=null;
     // Kamera und Mikro getrennt versuchen: ist die Kamera belegt (z. B. von OBS), soll wenigstens das Mikro laufen
     navigator.mediaDevices.getUserMedia(c).catch(function(e){
@@ -165,20 +228,20 @@
     }).then(function(s){
       stream=s;$('prev').srcObject=s;var hasV=s.getVideoTracks().length>0;
       $('prevMsg').style.display=hasV?'none':'flex';
-      $('prevMsg').textContent=camFail?camMsg(camFail):'Audio only';
+      if(camFail)camMsg(camFail);else setT('prevMsg','audioOnly');
       meter(s);devices();$('err').textContent='';
     }).catch(function(e){
-      $('prevMsg').style.display='flex';$('prevMsg').textContent=camMsg(e,true);
+      $('prevMsg').style.display='flex';camMsg(e,true);
       devices();
     });
   }
   // verstaendliche Meldung je nach Fehler
   function camMsg(e,both){
     var n=e&&e.name||'';
-    if(n==='NotAllowedError'||n==='SecurityError')return 'Access was blocked. Click the camera icon in the address bar, allow access and reload.';
-    if(n==='NotReadableError'||n==='TrackStartError'||n==='AbortError')return (both?'Camera or microphone':'The camera')+' is being used by another program (e.g. OBS, Discord, Teams). Close it there \u2014 or in OBS click Start Virtual Camera and pick \u201cOBS Virtual Camera\u201d above.';
-    if(n==='OverconstrainedError'||n==='NotFoundError')return (both?'No camera or microphone':'This camera was not')+' found. Pick another one above or check the cable.';
-    return (both?'Camera and microphone':'The camera')+' could not be started ('+(n||'unknown error')+'). Pick another one above or reload the page.';
+    if(n==='NotAllowedError'||n==='SecurityError')return setT('prevMsg','blocked');
+    if(n==='NotReadableError'||n==='TrackStartError'||n==='AbortError')return setT('prevMsg',both?'busy2':'busy1');
+    if(n==='OverconstrainedError'||n==='NotFoundError')return setT('prevMsg',both?'nf2':'nf1');
+    setT('prevMsg',both?'err2':'err1',{n:n||'?'});
   }
   function meter(s){
     if(!s.getAudioTracks().length)return;
@@ -191,8 +254,8 @@
     navigator.mediaDevices.enumerateDevices().then(function(ds){
       var cs=$('cam'),ms=$('mic'),cv=cs.value,mv=ms.value;
       var cams=ds.filter(function(d){return d.kind==='videoinput';}),mics=ds.filter(function(d){return d.kind==='audioinput';});
-      cs.innerHTML=cams.map(function(d,i){return '<option value="'+esc(d.deviceId)+'" data-l="'+esc(d.label)+'">'+esc(d.label||('Camera '+(i+1)))+'</option>';}).join('')+'<option value="none">No camera (audio only)</option>';
-      ms.innerHTML=mics.map(function(d,i){return '<option value="'+esc(d.deviceId)+'" data-l="'+esc(d.label)+'">'+esc(d.label||('Microphone '+(i+1)))+'</option>';}).join('');
+      cs.innerHTML=cams.map(function(d,i){return '<option value="'+esc(d.deviceId)+'" data-dl="'+esc(d.label)+'">'+esc(d.label||T('camN',{n:i+1}))+'</option>';}).join('')+'<option value="none">'+esc(T('noCamOpt'))+'</option>';
+      ms.innerHTML=mics.map(function(d,i){return '<option value="'+esc(d.deviceId)+'" data-dl="'+esc(d.label)+'">'+esc(d.label||T('micN',{n:i+1}))+'</option>';}).join('');
       var vt=stream&&stream.getVideoTracks()[0],at=stream&&stream.getAudioTracks()[0];
       cs.value=cv&&cs.querySelector('option[value="'+cv+'"]')?cv:(vt&&vt.getSettings().deviceId)||cs.value;
       ms.value=mv&&ms.querySelector('option[value="'+mv+'"]')?mv:(at&&at.getSettings().deviceId)||ms.value;
@@ -201,18 +264,18 @@
   $('cam').addEventListener('change',start);$('mic').addEventListener('change',start);
 
   // ---- Call ----
-  function lbl(sel){var o=sel.options[sel.selectedIndex];return o?(o.getAttribute('data-l')||'').replace(/ /g,'_'):'';}   // nur echte Geraetenamen, sonst waehlt VDO.ninja selbst
+  function lbl(sel){var o=sel.options[sel.selectedIndex];return o?(o.getAttribute('data-dl')||'').replace(/ /g,'_'):'';}   // nur echte Geraetenamen, sonst waehlt VDO.ninja selbst
   function norm(n){return String(n||'').normalize('NFC').toLowerCase().replace(/\s+/g,'').slice(0,40);}
   function pid(room,name){
     var data=new TextEncoder().encode(String(room).toLowerCase()+'|'+norm(name));
     return crypto.subtle.digest('SHA-1',data).then(function(b){var h='';new Uint8Array(b).forEach(function(x){h+=('0'+x.toString(16)).slice(-2);});return 'c'+h.slice(0,15);});
   }
   function join(){
-    var name=($('name').value||'').trim().slice(0,40);if(!norm(name)){$('err').textContent='Please enter your name.';$('name').focus();return;}
-    if(!window.crypto||!crypto.subtle||!window.TextEncoder){$('err').textContent='Your browser is too old. Please use a current Chrome, Edge, Firefox or Safari.';return;}
+    var name=($('name').value||'').trim().slice(0,40);if(!norm(name)){setT('err','enterName');$('name').focus();return;}
+    if(!window.crypto||!crypto.subtle||!window.TextEncoder){setT('err','oldBrowser');return;}
     try{localStorage.setItem('sl-join-name',name);}catch(_){}
     $('joinBtn').disabled=true;
-    pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;$('err').textContent='Could not start. Please reload the page.';});
+    pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;setT('err','cantStart');});
   }
   function start2(name,id){
     myId=id;
@@ -226,20 +289,26 @@
   function post(m){try{ifr.contentWindow.postMessage(m,'*');}catch(_){}}
   function toggleMic(){micOn=!micOn;post({mic:micOn});paint();}
   function toggleCam(){post({camera:'toggle'});camOn=!camOn;paint();}
-  function paint(){var a=$('bMic'),c=$('bCam');a.classList.toggle('off',!micOn);a.querySelector('span').textContent=micOn?'Mic on':'Muted';c.classList.toggle('off',!camOn);c.querySelector('span').textContent=camOn?'Cam on':'Cam off';}
-  function leave(){if(ifr){post({close:true});var f=ifr;ifr=null;setTimeout(function(){f.remove();},400);}show('done');}
+  function paint(){var a=$('bMic'),c=$('bCam');a.classList.toggle('off',!micOn);a.querySelector('span').textContent=T(micOn?'micOn':'muted');c.classList.toggle('off',!camOn);c.querySelector('span').textContent=T(camOn?'camOn':'camOff');}
+  function leave(){if(ifr){post({close:true});var f=ifr;ifr=null;setTimeout(function(){f.remove();},400);}setT('doneTitle','leftT');setT('doneSub','leftS');show('done');}
   function toggleChat(){chatOpen=!chatOpen;$('drawer').classList.toggle('open',chatOpen);if(chatOpen){$('chatBadge').classList.remove('on');$('chatIn').focus();}}
   function addMsg(who,t){var d=document.createElement('div');d.className='m';d.innerHTML='<b>'+esc(who)+'</b>'+esc(t);$('msgs').appendChild(d);$('msgs').scrollTop=1e9;if(!chatOpen)$('chatBadge').classList.add('on');}
-  function sendChat(){var i=$('chatIn'),v=i.value.trim();if(!v||!ifr)return;post({sendChat:v});addMsg('You',v);i.value='';}
+  function sendChat(){var i=$('chatIn'),v=i.value.trim();if(!v||!ifr)return;post({sendChat:v});addMsg(T('you'),v);i.value='';}
   $('chatIn').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
   // Steuerbefehle aus dem senior-labs-Studio: unsichtbare Chat-Nachricht "SLCMD <befehl> <kennung>"
   function onCmd(t){
     var p=String(t).split(' ');if(p[2]!==myId)return;
-    if(p[1]==='mute'&&micOn){post({mic:false});micOn=false;paint();addMsg('senior-labs','The host muted your microphone. Click Mic to unmute.');}
-    else if(p[1]==='kick'){leave();$('doneTitle').textContent='You were removed from the stream';$('doneSub').textContent='The streamer ended your connection. If they invite you again, use the same link and name.';}
+    if(p[1]==='mute'&&micOn){post({mic:false});micOn=false;paint();addMsg('senior-labs',T('mutedBy'));}
+    else if(p[1]==='kick'){leave();setT('doneTitle','kickT');setT('doneSub','kickS');}
   }
-  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){var m=d.gotChat.msg||'';if(String(m).indexOf('SLCMD ')===0){onCmd(m);return;}addMsg(d.gotChat.label||d.gotChat.name||'Host',m);}});
+  window.addEventListener('message',function(e){if(!ifr||e.source!==ifr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat){var m=d.gotChat.msg||'';if(String(m).indexOf('SLCMD ')===0){onCmd(m);return;}addMsg(d.gotChat.label||d.gotChat.name||T('host'),m);}});
   window.addEventListener('beforeunload',function(){if(ifr)post({close:true});});
+
+  applyLang();
+  if(!Q.r||!/^[A-Za-z0-9_]{4,40}$/.test(Q.r)){
+    setT('doneTitle','badT');setT('doneSub','badS');
+    document.querySelector('#done button').style.display='none';show('done');
+  }else{show('lobby');start();}
 </script>
 </body>
 </html>
