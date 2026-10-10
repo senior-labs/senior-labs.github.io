@@ -108,7 +108,7 @@
     <p class="sub" data-l="sub"></p>
     <div class="cols">
       <div>
-        <div class="prev"><video id="prev" autoplay muted playsinline></video><div class="msg" id="prevMsg"></div><span class="nm" id="prevName"></span></div>
+        <div class="prev"><video id="prev" autoplay muted playsinline></video><div class="msg" id="prevMsg"></div><iframe id="prevFx" allow="camera *; autoplay" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0"></iframe><span class="nm" id="prevName"></span></div>
         <div class="meter"><i id="meter"></i></div>
       </div>
       <div>
@@ -189,8 +189,8 @@
       kickT:'You were removed from the stream',kickS:'The streamer ended your connection. If they invite you again, use the same link and name.',
       mutedBy:'The host muted your microphone. Click Mic to unmute.',
       bgLbl:'Background',bgBtn:'Background',bgUse:'Use',bgNone:'Off',bgB1:'Soft',bgB2:'Blur',bgB3:'Strong',bgOwn:'Link',
-      bgHintFx:'Applied as soon as you join \u2014 you then see yourself with it. Needs a bit of computing power.',bgHintUrl:'Paste a link to an image on the internet (https). The image must be freely accessible, otherwise it stays without background.',
-      bgBadUrl:'Please paste a link starting with https://',bgReconnect:'Changing the background reconnects you for a moment.'},
+      bgHintFx:'The preview shows you with the background. Needs a bit of computing power.',bgHintUrl:'Paste a link to an image on the internet (https). The image must be freely accessible, otherwise it stays without background.',
+      bgBadUrl:'Please paste a link starting with https://',bgLoading:'Loading background preview\u2026',bgReconnect:'Changing the background reconnects you for a moment.'},
     de:{title:'Komm zu {s} in den Stream',titleNo:'Du bist zum Stream eingeladen',slQ:'Du streamst selbst mit senior-labs?',slTxt:'Dann tritt nicht hier bei — öffne den Raum in deinem senior-labs. Deine Cam läuft dann über dein Studio und du landest in deinem eigenen Rahmen.',slGo:'In senior-labs öffnen →',
       orGuest:'oder als Gast beitreten',sub:'Prüf Kamera und Mikrofon, dann tritt bei. Erst wenn du auf Beitreten klickst, wird etwas gesendet.',
       nameLbl:'Dein Name <span style="font-weight:400">&mdash; nimm jedes Mal denselben, dann landest du wieder am selben Platz</span>',namePh:'z. B. Peter',camLbl:'Kamera',micLbl:'Mikrofon',
@@ -210,8 +210,8 @@
       kickT:'Du wurdest aus dem Stream entfernt',kickS:'Der Streamer hat deine Verbindung beendet. Wenn er dich wieder einlädt, nimm denselben Link und Namen.',
       mutedBy:'Der Host hat dein Mikrofon stummgeschaltet. Klick auf Mikro, um es wieder einzuschalten.',
       bgLbl:'Hintergrund',bgBtn:'Hintergrund',bgUse:'Nehmen',bgNone:'Aus',bgB1:'Leicht',bgB2:'Unscharf',bgB3:'Stark',bgOwn:'Link',
-      bgHintFx:'Wird beim Beitreten angewendet \u2014 dann siehst du dich damit. Braucht etwas Rechenleistung.',bgHintUrl:'F\u00fcge den Link zu einem Bild im Internet ein (https). Das Bild muss frei abrufbar sein, sonst bleibt der Hintergrund aus.',
-      bgBadUrl:'Bitte einen Link einf\u00fcgen, der mit https:// beginnt',bgReconnect:'Beim Wechsel wirst du kurz neu verbunden.'}
+      bgHintFx:'Die Vorschau zeigt dich mit dem Hintergrund. Braucht etwas Rechenleistung.',bgHintUrl:'F\u00fcge den Link zu einem Bild im Internet ein (https). Das Bild muss frei abrufbar sein, sonst bleibt der Hintergrund aus.',
+      bgBadUrl:'Bitte einen Link einf\u00fcgen, der mit https:// beginnt',bgLoading:'Vorschau mit Hintergrund wird geladen\u2026',bgReconnect:'Beim Wechsel wirst du kurz neu verbunden.'}
   };
   var lang='en';try{lang=localStorage.getItem('sl-lang')||'';}catch(_){}
   if(lang!=='de'&&lang!=='en')lang=/^de/i.test(navigator.language||'')?'de':'en';
@@ -252,7 +252,7 @@
       stream=s;$('prev').srcObject=s;var hasV=s.getVideoTracks().length>0;
       $('prevMsg').style.display=hasV?'none':'flex';
       if(camFail)camMsg(camFail);else setT('prevMsg','audioOnly');
-      meter(s);devices();$('err').textContent='';
+      meter(s);devices();$('err').textContent='';prevFx();
     }).catch(function(e){
       $('prevMsg').style.display='flex';camMsg(e,true);
       devices();
@@ -310,13 +310,32 @@
     });
     var h=$('bgHint');if(h)h.textContent=bg.k==='url'?T('bgHintUrl'):(bg.k==='none'?'':T('bgHintFx'));
   }
-  function bgSet(k){if(bg.k===k)return;bg.k=k;bgSave();bgRender();if(k!=='url'||bg.url)bgLive();}
-  function bgApplyUrl(id){var v=($(id).value||'').trim();if(!/^https:[/][/][^ "'<>]+$/i.test(v)){alertBg(id);return;}bg.url=v;bg.k='url';bgSave();bgRender();bgLive();}
+  function bgSet(k){if(bg.k===k)return;bg.k=k;bgSave();bgRender();if(k!=='url'||bg.url)bgLive();prevFx();}
+  function bgApplyUrl(id){var v=($(id).value||'').trim();if(!/^https:[/][/][^ "'<>]+$/i.test(v)){alertBg(id);return;}bg.url=v;bg.k='url';bgSave();bgRender();bgLive();prevFx();}
   function alertBg(id){var i=$(id);i.style.borderColor='var(--red)';i.title=T('bgBadUrl');setTimeout(function(){i.style.borderColor='';},2500);}
   document.addEventListener('click',function(e){var b=e.target.closest('[data-bg]');if(b)bgSet(b.getAttribute('data-bg'));});
   function toggleBg(){$('bgPop').classList.toggle('open');}
   // im Anruf: mit neuem Hintergrund neu verbinden (VDO.ninja kann Effekte nicht live umschalten)
   function bgLive(){if(!ifr||!myName)return;var f=ifr;ifr=null;try{f.contentWindow.postMessage({close:true},'*');}catch(_){}setTimeout(function(){f.remove();},300);start2(myName,myId,true);}
+
+  // ---- Vorschau mit Hintergrund: bei gewaehltem Effekt zeigt ein VDO.ninja-Fenster (ohne Raum, ohne Ton) das Bild
+  // genau so, wie es spaeter gesendet wird. Ohne Effekt bleibt die normale Kamera-Vorschau. ----
+  var pvId='slpv'+Math.random().toString(36).slice(2,12);
+  function prevFx(){
+    var box=$('prevFx');if(!box)return;
+    var want=(!ifr&&stream&&!camFail&&$('cam').value!=='none')?bgParams():'';
+    if(!want){
+      if(box._k){box._k='';box.src='about:blank';box.style.display='none';$('prev').style.visibility='';if(stream&&!stream.getVideoTracks().length&&$('cam').value!=='none'&&!camFail){start();return;}}
+      if(stream&&stream.getVideoTracks().length)$('prevMsg').style.display='none';
+      return;
+    }
+    stream.getVideoTracks().forEach(function(t){t.stop();stream.removeTrack(t);});   // Kamera an das Vorschau-Fenster abgeben
+    var camL=lbl($('cam')),k=want+'|'+camL;if(box._k===k)return;box._k=k;
+    $('prev').style.visibility='hidden';setT('prevMsg','bgLoading');$('prevMsg').style.display='flex';
+    box.src='https://vdo.ninja/?push='+pvId+'&webcam&autostart&cleanoutput&transparent&audiodevice=0'+(camL?'&videodevice='+enc(camL):'')+want;
+    box.style.display='block';
+  }
+  function prevFxOff(){var box=$('prevFx');if(box&&box._k){box._k='';box.src='about:blank';box.style.display='none';}}
 
   // ---- Call ----
   function lbl(sel){var o=sel.options[sel.selectedIndex];return o?(o.getAttribute('data-dl')||'').replace(/ /g,'_'):'';}   // nur echte Geraetenamen, sonst waehlt VDO.ninja selbst
@@ -333,7 +352,7 @@
     pid(Q.r,name).then(function(id){$('joinBtn').disabled=false;start2(name,id);},function(){$('joinBtn').disabled=false;setT('err','cantStart');});
   }
   function start2(name,id,again){
-    myId=id;myName=name;
+    myId=id;myName=name;prevFxOff();
     var noCam=$('cam').value==='none'||!!camFail,camL=noCam?'0':lbl($('cam')),micL=lbl($('mic'));
     stop();if(!again){micOn=true;camOn=!noCam;}
     var u='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&push='+enc(id)+'&label='+enc(name)
