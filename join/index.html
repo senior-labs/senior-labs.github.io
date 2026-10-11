@@ -160,7 +160,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@vdoninja/sdk@1.6.1/vdoninja-sdk.js"></script>
 <script>
   // Oeffentliche Gastseite von senior-labs. Alle Daten stehen im #Hash des Raum-Links (gehen nie an einen Server):
-  //   r=Raum  p=Passwort  s=Streamer  o=Raum-Ersteller  (n=Name vorbelegen, optional)
+  //   r=Raum  p=Passwort  s=Streamer  o=Raum-Ersteller  k=oeffentlicher Schluessel des Erstellers  (n=Name vorbelegen, optional)
   // Kennung = 'c' + sha1(raum | normierter Name) - genau wie in senior-labs -> gleicher Name = gleicher Rahmen.
   // Senden: VDO.ninja-SDK mit dem bearbeiteten Bild (Hintergrund-Effekte aus bgfx.js) + Mikro.
   // Zuschauen/Chat: ein VDO.ninja-Zuschauerfenster (&scene, ohne sich selbst: &exclude=<eigene Kennung>).
@@ -336,8 +336,25 @@
     if(!window.crypto||!crypto.subtle||!window.TextEncoder||!window.VDONinjaSDK){setT('err','oldBrowser');return;}
     try{localStorage.setItem('sl-join-name',name);}catch(_){}
     $('joinBtn').disabled=true;
-    pid(Q.r,name).then(function(id){start2(name,id);},function(){$('joinBtn').disabled=false;setT('err','cantStart');});
+    pid(Q.r,name).then(function(id){
+      return nameFree(id).then(function(free){if(!free){$('joinBtn').disabled=false;setT('err','nameTaken');return;}start2(name,id);});
+    },function(){$('joinBtn').disabled=false;setT('err','cantStart');});
   }
+  // ---- Name schon im Raum? Ein unsichtbarer Beobachter (ohne Bild/Ton) liefert die Kennungen, die gerade senden ----
+  // Frei -> sofort beitreten; belegt -> bis zu 6 s nachpruefen (z. B. eigener, gerade geschlossener Tab), dann Meldung.
+  var obsIfr=null,liveIds={},liveAt=0;
+  function obsStart(){if(obsIfr||!Q.r)return;obsIfr=document.createElement('iframe');obsIfr.setAttribute('aria-hidden','true');obsIfr.setAttribute('allow','autoplay');
+    obsIfr.style.cssText='position:fixed;left:-20px;top:-20px;width:2px;height:2px;opacity:0;border:0;pointer-events:none';
+    obsIfr.src='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&scene&novideo&noaudio&cleanoutput';document.body.appendChild(obsIfr);}
+  function obsStop(){if(!obsIfr)return;var f=obsIfr;obsIfr=null;try{f.src='about:blank';}catch(_){}setTimeout(function(){f.remove();},300);}
+  window.addEventListener('message',function(e){if(!obsIfr||e.source!==obsIfr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.streamIDs){liveIds=d.streamIDs||{};liveAt=Date.now();}});
+  setInterval(function(){if(obsIfr)try{obsIfr.contentWindow.postMessage({getStreamIDs:true},'*');}catch(_){}},2000);
+  function nameFree(id){return new Promise(function(res){var t0=Date.now();
+    (function chk(){var fresh=liveAt&&Date.now()-liveAt<7000;
+      if(fresh&&!liveIds[id])return res(true);
+      if(Date.now()-t0>(fresh?6000:4000))return res(!(fresh&&liveIds[id]));
+      if(obsIfr)try{obsIfr.contentWindow.postMessage({getStreamIDs:true},'*');}catch(_){}
+      setTimeout(chk,1000);})();});}
   function start2(name,id){
     myId=id;myName=name;micOn=true;camOn=!!fx;
     var tracks=[];if(fx)tracks.push(fx.track);if(micStream)micStream.getAudioTracks().forEach(function(t){t.enabled=true;tracks.push(t);});
@@ -347,9 +364,9 @@
       var d=e.detail||{},c=vdo.connections&&vdo.connections.get(d.uuid),conn=c&&(c[d.type]||c.publisher||c.viewer),ch=conn&&conn.dataChannel;
       if(ch)ch.addEventListener('message',function(m){if(typeof m.data!=='string')return;var o;try{o=JSON.parse(m.data);}catch(_){return;}if(o&&typeof o.chat==='string')onChat(o.chat,'');});
     });
-    vdo.addEventListener('alert',function(e){var t=JSON.stringify(e.detail||'');if(/in use|already|taken/i.test(t)){leave(true);show('lobby');setT('err','nameTaken');}});
+    vdo.addEventListener('alert',function(e){var t=JSON.stringify(e.detail||'');if(/in use|already|taken/i.test(t)){leave(true);show('lobby');setT('err','nameTaken');obsStart();}});
     vdo.connect().then(function(){return vdo.publish(new MediaStream(tracks),{room:Q.r,streamID:id,label:name});}).then(function(){
-      inCall=true;$('joinBtn').disabled=false;
+      inCall=true;$('joinBtn').disabled=false;obsStop();
       viewIfr=document.createElement('iframe');viewIfr.setAttribute('allow','autoplay; fullscreen');
       viewIfr.src='https://vdo.ninja/?room='+enc(Q.r)+(Q.p?'&password='+enc(Q.p):'')+'&scene&cleanoutput&exclude='+enc(id);
       $('stage').insertBefore(viewIfr,$('drawer'));
@@ -380,18 +397,35 @@
   $('chatIn').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
   var seenMsg={};
   function onChat(m,label){
-    m=String(m||'');if(m.indexOf('SLCMD ')===0){onCmd(m);return;}if(m.indexOf('SLADM ')===0){onAdm(m);return;}if(m.indexOf('SLMIC ')===0)return;
+    m=String(m||'');if(/^SL[A-Z0-9]+ /.test(m)){if(m.indexOf('SLCMD2 ')===0)onCmd(m);else if(m.indexOf('SLADM2 ')===0)onAdm(m);return;}   // Steuer-Nachrichten nie im Chat
     var k=m+'|'+Math.floor(Date.now()/3000);if(seenMsg[k])return;seenMsg[k]=1;   // gleiche Nachricht ueber zwei Wege nur einmal zeigen
     var mm=m.match(/^\[([^\]]{1,40})\] ([\s\S]*)$/);addMsg(mm?mm[1]:(String(label||'').replace(/<[^>]*>/g,'').replace(/:\s*$/,'').trim()||T('host')),mm?mm[2]:m);
   }
-  // ---- Rechte: Besitzer steht im Link (o=), Admins kommen per "SLADM <besitzer> <version> <liste>" aus dem Raum ----
-  var owner=norm(Q.o||''),admins=[],admV=0,kicked=false;
-  function onAdm(t){var p=String(t).split(' ');if(p.length<4||!owner||norm(p[1])!==owner)return;var v=parseInt(p[2],10)||0;if(v<=admV)return;admV=v;admins=p[3]==='-'?[]:p[3].split(',').map(norm);}
+  // ---- Rechte: nur digital unterschriebene Befehle zaehlen ----
+  // Der oeffentliche Schluessel des Raum-Erstellers steht im Link (k=). Die Admin-Liste "SLADM2 <version> <name=schluessel,..|-> <unterschrift>"
+  // und Befehle "SLCMD2 <befehl> <kennung> <zeit> <schluessel> <unterschrift>" werden per WebCrypto (ECDSA P-256) geprueft.
+  // Ein Name allein bewirkt nichts; ohne k= (alter Link) wird kein Befehl ausgefuehrt.
+  var ownerPub=/^[A-Za-z0-9_-]{87}$/.test(Q.k||'')?Q.k:'',adminPubs=[],admV=0,kicked=false,keyCache={},cmdSeen={},roomL=String(Q.r||'').toLowerCase();
+  function b64u(x){x=String(x).replace(/-/g,'+').replace(/_/g,'/');while(x.length%4)x+='=';var b=atob(x),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+  function verify(text,sig,pub){
+    if(!window.crypto||!crypto.subtle||!/^[A-Za-z0-9_-]{86}$/.test(sig||'')||!/^[A-Za-z0-9_-]{87}$/.test(pub||''))return Promise.resolve(false);
+    var kp=keyCache[pub]||(keyCache[pub]=crypto.subtle.importKey('raw',b64u(pub),{name:'ECDSA',namedCurve:'P-256'},false,['verify']));
+    return kp.then(function(k){return crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,b64u(sig),new TextEncoder().encode(text));}).catch(function(){return false;});
+  }
+  function onAdm(t){
+    var p=String(t).split(' ');if(p.length!==4||p[0]!=='SLADM2'||!ownerPub)return;var v=parseInt(p[1],10)||0;if(v<=admV)return;
+    verify('SLADM2|'+roomL+'|'+v+'|'+p[2],p[3],ownerPub).then(function(ok){if(!ok||v<=admV)return;admV=v;adminPubs=p[2]==='-'?[]:p[2].split(',').map(function(e){return e.slice(e.lastIndexOf('=')+1);});});
+  }
   function onCmd(t){
-    var p=String(t).split(' ');if(p[2]!==myId||!inCall)return;
-    var from=norm(p[3]||'');if(!from||(from!==owner&&admins.indexOf(from)<0))return;   // nur Admins duerfen
-    if(p[1]==='mute'&&micOn){toggleMic();addMsg('senior-labs',T('mutedBy'));}
-    else if(p[1]==='kick'&&!kicked){kicked=true;leave();setT('doneTitle','kickT');setT('doneSub','kickS');}
+    var p=String(t).split(' ');if(p.length!==6||p[0]!=='SLCMD2'||p[2]!==myId||!inCall||!ownerPub)return;
+    var ts=parseInt(p[3],10),pub=p[4],sig=p[5];
+    if(!ts||Math.abs(Date.now()-ts)>300000||cmdSeen[sig])return;   // hoechstens 5 Minuten alt, jeder Befehl nur einmal
+    if(pub!==ownerPub&&adminPubs.indexOf(pub)<0)return;           // nur Ersteller oder bestaetigte Admins
+    verify('SLCMD2|'+roomL+'|'+p[1]+'|'+p[2]+'|'+ts,sig,pub).then(function(ok){
+      if(!ok||cmdSeen[sig]||!inCall)return;cmdSeen[sig]=1;
+      if(p[1]==='mute'&&micOn){toggleMic();addMsg('senior-labs',T('mutedBy'));}
+      else if(p[1]==='kick'&&!kicked){kicked=true;leave();setT('doneTitle','kickT');setT('doneSub','kickS');}
+    });
   }
   window.addEventListener('message',function(e){if(!viewIfr||e.source!==viewIfr.contentWindow)return;var d=e.data;if(d&&typeof d==='object'&&d.gotChat)onChat(d.gotChat.msg,d.gotChat.label);});
   window.addEventListener('beforeunload',function(){if(inCall)leave(true);});
@@ -401,7 +435,7 @@
   if(!Q.r||!/^[A-Za-z0-9_]{4,40}$/.test(Q.r)){
     setT('doneTitle','badT');setT('doneSub','badS');
     document.querySelector('#done button').style.display='none';show('done');
-  }else{show('lobby');start();}
+  }else{show('lobby');start();obsStart();}
 </script>
 </body>
 </html>
